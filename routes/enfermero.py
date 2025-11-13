@@ -6,7 +6,7 @@ import qrcode
 import base64
 from io import BytesIO
 
-IP_DEL_SERVIDOR = '192.168.99.100' 
+IP_DEL_SERVIDOR = '192.168.1.130' 
 PUERTO = '5000'
 BASE_URL = f"http://{IP_DEL_SERVIDOR}:{PUERTO}"
 # ---------------------

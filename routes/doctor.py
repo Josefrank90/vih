@@ -1,10 +1,11 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash, request, send_file, current_app, jsonify
+from flask import Blueprint, render_template, session, redirect, url_for, flash, request, send_file, current_app
 from database.connection import execute_query 
 from datetime import datetime
 from functools import wraps 
 import qrcode
 from io import BytesIO
 from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 from reportlab.lib.utils import ImageReader 
 import uuid 
 import json 
@@ -20,38 +21,6 @@ BASE_URL = f"http://{IP_DEL_SERVIDOR}:{PUERTO}"
 
 LOGO_JURISDICCION_PATH = 'static/assets/img/logo_jurisdiccion.png' 
 LOGO_SALUD_PATH = 'static/assets/img/logo_salud.png' 
-
-
-# ===================================================================
-# --- FUNCIONES DE OBTENCIÓN DE DATOS GEOGRÁFICOS DESDE DB (INTEGRADAS) ---
-# Se usan las funciones de consulta que asumimos están en database.connection
-# ===================================================================
-
-def obtener_estados_db(pais_id=1):
-    try:
-        query = "SELECT id, nombre FROM estados WHERE pais = %s ORDER BY nombre" 
-        return execute_query(query, (pais_id,)) or []
-    except Exception as e:
-        current_app.logger.error(f"❌ ERROR al obtener estados desde DB: {e}")
-        return []
-
-def obtener_municipios_db(estado_id):
-    try:
-        query = "SELECT id, nombre FROM municipios WHERE estado = %s ORDER BY nombre"
-        return execute_query(query, (estado_id,)) or []
-    except Exception as e:
-        current_app.logger.error(f"❌ ERROR al obtener municipios desde DB: {e}")
-        return []
-
-def obtener_colonias_db(municipio_id):
-    try:
-        query = "SELECT id, asentamiento AS nombre FROM colonias WHERE municipio = %s ORDER BY asentamiento"
-        return execute_query(query, (municipio_id,)) or []
-    except Exception as e:
-        current_app.logger.error(f"❌ ERROR al obtener colonias desde DB: {e}")
-        return []
-
-# ===================================================================
 
 
 class CustomJsonEncoder(json.JSONEncoder):
@@ -78,24 +47,6 @@ def doctor_login_required(f):
 
 
 doctor_bp = Blueprint('doctor_bp', __name__, url_prefix='/doctor') 
-
-
-# -------------------------------------------------------------------
-# --- RUTAS API (Para carga dinámica de los SELECTS) ---
-# -------------------------------------------------------------------
-@doctor_bp.route('/api/municipios/<int:estado_id>', methods=['GET'])
-@doctor_login_required
-def api_municipios(estado_id):
-    """Carga los municipios basado en el ID del estado seleccionado."""
-    municipios_data = obtener_municipios_db(estado_id)
-    return jsonify(municipios_data)
-
-@doctor_bp.route('/api/colonias/<int:municipio_id>', methods=['GET'])
-@doctor_login_required
-def api_colonias(municipio_id):
-    """Carga las colonias/localidades basado en el ID del municipio seleccionado."""
-    colonias_data = obtener_colonias_db(municipio_id)
-    return jsonify(colonias_data)
 
 
 # -------------------------------------------------------------------
@@ -146,7 +97,7 @@ def calcular_metricas_reporte():
         tasa_negativa = round((float(negativos) / total) * 100, 1) if total > 0 else 0.0
 
 
-        # 2. Distribución por Sexo (Lógica de mapeo para 'MASCULINO'/'FEMENINO')
+        # 2. Distribución por Sexo (CORRECCIÓN CRÍTICA IMPLEMENTADA)
         query_sexo = """
         SELECT 
             UPPER(p.sexo) as sexo, 
@@ -162,7 +113,7 @@ def calcular_metricas_reporte():
             sexo_db_val = str(item.get('sexo', 'O')).upper().strip() 
             total_casos = int(item.get('total_sexo', 0))
 
-            if 'MASCULINO' in sexo_db_val or sexo_db_val == 'M':
+            if 'MASCULINO' in sexo_db_val or sexo_db_val == 'H' or sexo_db_val == 'M':
                 distribucion_sexo['H'] += total_casos
             elif 'FEMENINO' in sexo_db_val or sexo_db_val == 'F':
                 distribucion_sexo['M'] += total_casos
@@ -186,7 +137,7 @@ def calcular_metricas_reporte():
             END as rango_edad,
             COUNT(p.id) as total,
             
-            -- COLUMNA TEMPORAL DE ORDENAMIENTO (SOLUCIÓN al Error 1055)
+            -- COLUMNA TEMPORAL DE ORDENAMIENTO (PARA EVITAR EL ERROR 1055)
             CASE 
                 WHEN p.edad BETWEEN 0 AND 5 THEN 1
                 WHEN p.edad BETWEEN 6 AND 10 THEN 2
@@ -201,7 +152,7 @@ def calcular_metricas_reporte():
             
         FROM paciente p
         WHERE p.resultado IS NOT NULL AND p.edad IS NOT NULL
-        GROUP BY rango_edad, rango_orden
+        GROUP BY rango_edad, rango_orden -- Agrupamos por la etiqueta Y el orden
         ORDER BY rango_orden; 
         """
         data_edad = execute_query(query_edad) or []
@@ -210,6 +161,7 @@ def calcular_metricas_reporte():
         for item in data_edad:
             distribucion_edad[str(item.get('rango_edad', 'N/D'))] = int(item.get('total', 0))
         
+        # Retorno final
         return {
             'codigos_generados': codigos_generados,
             'codigos_vinculados': codigos_vinculados,
@@ -225,7 +177,9 @@ def calcular_metricas_reporte():
     except Exception as e:
         current_app.logger.error(f"Error CRÍTICO en calcular_metricas_reporte (DB): {e}")
         return default_metricas
-
+# -------------------------------------------------------------------
+# --- FIN FUNCIÓN AUXILIAR ---
+# -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
 # --- 1. RUTA DASHBOARD ---
@@ -287,6 +241,7 @@ def reportes():
         metricas = {}
 
     try:
+        # Usamos CustomJsonEncoder para manejar Decimal
         metricas_json = json.dumps(metricas, cls=CustomJsonEncoder)
     except Exception as e:
         current_app.logger.error(f"Error de serialización JSON en reportes: {e}")
@@ -506,23 +461,16 @@ def descargar_reporte_pdf():
 @doctor_bp.route('/generar_qr', methods=['GET', 'POST'])
 @doctor_login_required 
 def generar_qr():
-    # 1. Obtener la lista de estados (para la primera carga del formulario)
-    estados_disponibles = obtener_estados_db()
-    
-    # 2. Inicializar 'data' con valores por defecto o los valores del POST.
+    # Inicializar 'data' con valores por defecto para el método GET.
     data = {
         'campaign_number': request.form.get('campaign_number', ''), 
-        'estado_id': request.form.get('estado_id', ''), 
-        'municipio_id': request.form.get('municipio_id', ''), 
-        'colonia_id': request.form.get('colonia_id', ''), 
+        'delivery_location': request.form.get('delivery_location', ''), 
         'delivery_date': request.form.get('delivery_date', datetime.now().strftime('%Y-%m-%d')), 
         'quantity': request.form.get('quantity', '1') 
     }
     
     numero_campana = data['campaign_number'] 
-    estado_id = data['estado_id']
-    municipio_id = data['municipio_id']
-    colonia_id = data['colonia_id']
+    lugar_entrega = data['delivery_location'] 
     fecha_entrega_str = data['delivery_date']
     cantidad_qr_str = data['quantity']
     
@@ -533,65 +481,36 @@ def generar_qr():
             fecha_entrega = datetime.strptime(fecha_entrega_str, '%Y-%m-%d').date()
         except (ValueError, TypeError):
             flash("Error en la cantidad o formato de fecha. Usa números enteros y el formato AAAA-MM-DD.", "danger")
-            # 🛑 PASAMOS LA LISTA DE ESTADOS EN CASO DE ERROR POST
-            return render_template('doctor/generar_qr.html', data=data, estados=estados_disponibles)
+            return render_template('doctor/generar_qr.html', data=data)
         
         if cantidad_qr <= 0 or cantidad_qr > 100: # Limitamos a 100 por lote PDF
             flash("La cantidad de QRs debe ser mayor a cero y menor a 100 por lote.", "warning")
-            return render_template('doctor/generar_qr.html', data=data, estados=estados_disponibles)
+            return render_template('doctor/generar_qr.html', data=data)
         
-        if not numero_campana or not estado_id or not municipio_id or not colonia_id:
-            flash("La Campaña, Estado, Municipio y Localidad son obligatorios.", "warning")
-            return render_template('doctor/generar_qr.html', data=data, estados=estados_disponibles)
+        if not numero_campana or not lugar_entrega:
+            flash("La Campaña y el Lugar de Entrega son obligatorios.", "warning")
+            return render_template('doctor/generar_qr.html', data=data)
         
-        try:
-            estado_id = int(estado_id)
-            municipio_id = int(municipio_id)
-            colonia_id = int(colonia_id)
-        except ValueError:
-             flash("Error de validación: Los identificadores de ubicación deben ser números.", "danger")
-             return render_template('doctor/generar_qr.html', data=data, estados=estados_disponibles)
-
-        # 3. OBTENER LOS NOMBRES COMPLETOS ANTES DE INSERTAR EN LA DB
-        query_colonia = "SELECT asentamiento FROM colonias WHERE id = %s"
-        colonia_data = execute_query(query_colonia, (colonia_id,), fetch_one=True)
-        colonia_nombre = colonia_data['asentamiento'] if colonia_data else 'No Encontrado'
-        
-        query_municipio = "SELECT nombre FROM municipios WHERE id = %s"
-        municipio_data = execute_query(query_municipio, (municipio_id,), fetch_one=True)
-        municipio_nombre = municipio_data['nombre'] if municipio_data else 'No Encontrado'
-        
-        query_estado = "SELECT nombre FROM estados WHERE id = %s"
-        estado_data = execute_query(query_estado, (estado_id,), fetch_one=True)
-        estado_nombre_geografico = estado_data['nombre'] if estado_data else 'No Encontrado'
-
-        estado_qr_uso = "Generado"
+        estado = "Generado"
         qrs_generados_exitosamente = 0
-        codigos_generados = []
+        codigos_generados = [] # Lista para el PDF
 
         try:
-            # 🛑 CONSULTA DE INSERCIÓN FINAL:
-            query = """
-            INSERT INTO qr (codigo, numero_campana, lugar_entrega, localidad_entrega, fecha_entrega, estado, estado_geografico)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-            """
-            
+            # 1. Bucle para generar e insertar N códigos en la DB
             for i in range(cantidad_qr):
                 codigo_qr_unico = str(uuid.uuid4())
                 
-                success = execute_query(query, (codigo_qr_unico, 
-                                                numero_campana, 
-                                                colonia_nombre, 
-                                                municipio_nombre,
-                                                fecha_entrega, 
-                                                estado_qr_uso, 
-                                                estado_nombre_geografico),
-                                        commit=True)
+                query = """
+                INSERT INTO qr (codigo, numero_campana, lugar_entrega, fecha_entrega, estado)
+                VALUES (%s, %s, %s, %s, %s)
+                """
+                success = execute_query(query, (codigo_qr_unico, numero_campana, lugar_entrega, fecha_entrega, estado), commit=True)
                 
                 if success is not None and success > 0:
                     qrs_generados_exitosamente += 1
-                    codigos_generados.append(codigo_qr_unico)
-
+                    codigos_generados.append(codigo_qr_unico) # Guardar el código para el PDF
+                
+            
             if qrs_generados_exitosamente > 0:
                 # --- Generar PDF Multi-página para la descarga ---
                 pdf_buffer = BytesIO()
@@ -600,41 +519,49 @@ def generar_qr():
                 
                 x_margin = 60
                 y_start = height - 50
-                qr_size = 180 
+                qr_size = 180 # Tamaño del QR en puntos
                 line_spacing = 30
                 
                 for index, codigo in enumerate(codigos_generados):
+                    # Iniciar nueva página si es necesario (ej: cada 3 QRs por página)
                     if index > 0 and index % 3 == 0:
                         c.showPage()
                         y_start = height - 50
                     
-                    y_position = y_start - (index % 3) * 220 
+                    y_position = y_start - (index % 3) * 220 # Ajuste vertical para cada QR
                     
+                    # 1. URL de Acceso del Paciente (para codificar)
+                    # La URL debe ser escaneada por el ENFERMERO para iniciar el registro.
                     url_para_qr = f"{BASE_URL}{url_for('paciente_bp.acceso_qr', qr_codigo=codigo)}" 
                     
+                    # 2. Dibujar información textual
                     c.setFont("Helvetica-Bold", 14)
                     c.drawString(x_margin, y_position, f"Campaña: {numero_campana}")
                     c.setFont("Helvetica", 10)
                     y_position -= line_spacing
-                    c.drawString(x_margin, y_position, f"Lugar: {colonia_nombre} ({municipio_nombre}, {estado_nombre_geografico})") 
+                    c.drawString(x_margin, y_position, f"Lugar: {lugar_entrega}")
                     y_position -= line_spacing
                     c.drawString(x_margin, y_position, f"Código: {codigo}")
 
+                    # 3. Dibujar QR
                     qr_img = qrcode.make(url_para_qr)
                     img_buffer = BytesIO(); qr_img.save(img_buffer, "PNG"); img_buffer.seek(0)
                     qr_image_reader = ImageReader(img_buffer)
                     
                     c.drawImage(qr_image_reader, x_margin + 300, y_position - qr_size + 30, width=qr_size, height=qr_size)
                     
+                # Finalizar y forzar descarga
                 c.showPage(); c.save(); pdf_buffer.seek(0)
                 
                 flash(f"✅ ¡Éxito! Se generaron y registraron {qrs_generados_exitosamente} QRs. El PDF está descargando.", "success")
                 
+                # CLAVE: Devolver el PDF
                 return send_file(pdf_buffer, 
                                  as_attachment=True, 
                                  download_name=f"QRs_Lote_{numero_campana}_{datetime.now().strftime('%Y%m%d')}.pdf", 
                                  mimetype='application/pdf')
             
+            # --------------------------------------------------------
             else:
                 flash("Error al generar los QRs. No se insertó ninguno en la base de datos.", "danger")
                 
@@ -642,14 +569,18 @@ def generar_qr():
             flash(f"Error CRÍTICO al generar QRs y PDF: {e}", "danger")
             current_app.logger.error(f"Error en generar_qr: {e}")
             
-        return redirect(url_for('doctor_bp.dashboard')) 
+        return redirect(url_for('doctor_bp.dashboard')) # Fallback a dashboard en caso de error
 
-    # GET: Muestra el formulario, pasando los estados
-    return render_template('doctor/generar_qr.html', data=data, estados=estados_disponibles)
+    # GET: Muestra el formulario, pasando el diccionario 'data' inicializado con valores por defecto.
+    return render_template('doctor/generar_qr.html', data=data)
 
+# -------------------------------------------------------------------
+# --- 3. RUTA DE DESCARGA INDIVIDUAL DE QR (Desde el Dashboard) ---
+# -------------------------------------------------------------------
 @doctor_bp.route('/descargar_qr/<string:codigo_qr>', methods=['GET'])
 @doctor_login_required 
 def descargar_qr(codigo_qr):
+
     query = "SELECT codigo, numero_campana, lugar_entrega FROM qr WHERE codigo = %s"
     qr_data = execute_query(query, (codigo_qr,), fetch_one=True)
     
@@ -658,8 +589,10 @@ def descargar_qr(codigo_qr):
         return redirect(url_for('doctor_bp.dashboard')) 
     
     try:
+        # Asegúrate de que 'paciente_bp.acceso_qr' esté definido en tu otra Blueprint
         url_para_qr = f"{BASE_URL}{url_for('paciente_bp.acceso_qr', qr_codigo=codigo_qr)}"
         
+        # Generación del PDF
         pdf_buffer = BytesIO()
         c = canvas.Canvas(pdf_buffer, pagesize=letter)
         width, height = letter
@@ -670,6 +603,7 @@ def descargar_qr(codigo_qr):
         c.drawString(50, height - 110, f"Campaña: {qr_data['numero_campana']}")
         c.drawString(50, height - 130, f"Lugar: {qr_data['lugar_entrega']}")
 
+        # Dibujar QR
         qr_img = qrcode.make(url_para_qr)
         img_buffer = BytesIO(); qr_img.save(img_buffer, "PNG"); img_buffer.seek(0)
         qr_image_reader = ImageReader(img_buffer)
