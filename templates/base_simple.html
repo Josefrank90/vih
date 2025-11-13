@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Autenticación{% endblock %}</title>
+    
+    {# CRÍTICO: Asegura que el archivo style.css se carga correctamente #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="login-body"> 
+    
+    {# Mensajes Flash (Este es el contenedor del mensaje flotante) #}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="flashes-simple-container"> 
+                <ul class="flashes flashes-simple">
+                {% for category, message in messages %}
+                    <li class="{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    {# Aquí se inserta el formulario de login #}
+    {% block content %}{% endblock %}
+    
+    {# ----------------------------------------------------------------------------------- #}
+    {# -------- SCRIPT PARA OCULTAR MENSAJES FLASH AUTOMÁTICAMENTE (5 segundos) -------- #}
+    {# ----------------------------------------------------------------------------------- #}
+    <script>
+        // Seleccionamos el contenedor principal de los mensajes flash (el div flotante verde)
+        const flashContainer = document.querySelector('.flashes-simple-container');
+        
+        // Verificamos si existe el contenedor (es decir, si hay mensajes flash)
+        if (flashContainer) {
+            // La función setTimeout oculta el contenedor después de 5 segundos
+            setTimeout(() => {
+                // Oculta el elemento por completo. Si quieres un "fade-out" suave,
+                // necesitarías agregar una transición CSS y cambiar la opacidad.
+                flashContainer.style.display = 'none'; 
+            }, 5000); // 5000 milisegundos = 5 segundos
+        }
+    </script>
+    {# ----------------------------------------------------------------------------------- #}
+    
+</body>
+</html>

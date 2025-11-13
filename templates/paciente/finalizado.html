@@ -1,0 +1,29 @@
+{# templates/paciente/finalizado.html #}
+
+{% extends 'base_paciente.html' %} 
+
+{% block title %}Proceso Finalizado{% endblock %}
+
+{% block patient_content %}
+
+    <i class="fas fa-check-circle" style="font-size: 4rem; color: var(--color-success); margin-bottom: 20px;"></i>
+    <h1 style="font-size: 2.2rem; color: var(--color-dark-sidebar); margin-bottom: 10px;">
+        ¡Gracias por Participar en la Campaña!
+    </h1>
+    
+    <p style="font-size: 1.1rem; line-height: 1.5; margin-bottom: 30px;">
+        Has completado el proceso de la autoprueba VIH. <br>
+        La información es estrictamente confidencial.
+    </p>
+
+    <div class="alert alert-info" style="
+        padding: 15px; 
+        background-color: var(--color-light-bg); 
+        border: 1px solid var(--color-border-light);
+        border-radius: 8px; 
+        font-weight: 600;
+    ">
+        Puedes cerrar esta ventana.
+    </div>
+
+{% endblock %}

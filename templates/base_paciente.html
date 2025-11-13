@@ -1,0 +1,14 @@
+{# templates/base_paciente.html #}
+
+{# CRÍTICO: Este archivo debe extender a base_simple.html. #}
+{# Asumimos que base_simple.html está en la misma ubicación (raíz de templates/). #}
+{% extends 'base_simple.html' %} 
+
+{% block content %}
+    {# Este contenedor asegura que el contenido del paciente esté centrado #}
+    <div class="patient-flow-card">
+        {% block patient_content %}
+            {# Este bloque será llenado por bienvenida.html, cuestionario.html, etc. #}
+        {% endblock %}
+    </div>
+{% endblock %}

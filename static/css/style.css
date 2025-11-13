@@ -1,0 +1,1009 @@
+:root {
+    /* Tu color rojo (HIV-testing) y su acento */
+    --color-primary-red: #D32F2F;        /* Rojo VIBRANTE principal para botones/énfasis */
+    --color-primary-red-dark: #A52A2A;   /* Rojo Oscuro para hover y líneas */
+    
+    /* Colores del Dashboard (Inspirado en el diseño "Salud" más el ejemplo de dashboard) */
+    --color-sidebar-dark: #883a35;       /* Azul oscuro profesional (Alternativa al verde/azul) */
+    --color-sidebar-accent: #5e4734;     /* Gris a  zulado oscuro para hover */
+    --color-secondary-emphasis: #F98F1D; /* Naranja/Amarillo para énfasis de íconos/bordes */
+    
+    /* Colores de Fondo, Tarjetas y Texto */
+    --color-light-bg: #ECF0F1;           /* Fondo claro general (Gris muy claro) */
+    --color-card-bg: #FFFFFF;            /* Fondo de tarjetas blanco puro */
+    --color-white: #FFFFFF;              /* Alias para blanco */
+    --color-text-dark: #2C3E50;          /* Azul oscuro/Negro para texto principal */
+    --color-text-light: #ECF0F1;         /* Usado en el sidebar para contraste */
+    --color-text-faded: #7F8C8D;         /* Gris para texto secundario o descriptivo */
+
+    /* Bordes y Sombras */
+    --color-border-light: #DCE1E7;       /* Borde sutil */
+    --color-shadow-light: rgba(0, 0, 0, 0.08); /* Sombra suave para tarjetas */
+    --color-shadow-medium: rgba(0, 0, 0, 0.20); /* Sombra más fuerte para modals/login */
+
+    /* Estados de Mensajes */
+    --color-success: #2ECC71;            /* Verde esmeralda para éxito */
+    --color-danger: #E74C3C;             /* Rojo para alerta/negativo */
+    --color-warning: #F39C12;            /* Amarillo/Naranja para advertencia */
+    
+    /* Variables Específicas para Login (Mejoradas) */
+    --color-login-bg: #893939;           /* Rojo oscuro para el body del login */
+    --color-login-left-bg: #ffcdd2;      /* Rosa muy pálido para el lado izquierdo */
+    --color-input-bg-login: #FAFAFA;     /* Fondo de input ligeramente gris */
+}
+
+/* === RESETS GLOBALES Y TIPOGRAFÍA === */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+    color: var(--color-text-dark);
+    line-height: 1.6;
+    background-color: var(--color-light-bg);
+    transition: background-color 0.3s;
+    /* Evita el destello al cambiar de fondo en el login */
+    overflow-x: hidden; 
+}
+
+a {
+    text-decoration: none;
+    color: var(--color-sidebar-dark); /* Color más neutro para enlaces generales */
+    transition: color 0.3s;
+}
+
+a:hover {
+    color: var(--color-primary-red);
+}
+
+/* === ESTILO GENERAL DE INPUTS Y BOTONES === */
+input, select, textarea {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--color-border-light);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: var(--color-text-dark);
+    background-color: var(--color-card-bg); /* Usar la variable de tarjeta */
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box; 
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--color-primary-red);
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2); /* Sombra más definida */
+    outline: none;
+}
+
+button, .btn-primary { 
+    background-color: var(--color-primary-red);
+    color: var(--color-white);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.3s;
+    display: inline-block;
+    text-align: center;
+    text-transform: uppercase; /* Pequeño detalle extra */
+    letter-spacing: 0.5px;
+}
+
+button:hover, .btn-primary:hover {
+    background-color: var(--color-primary-red-dark);
+    transform: translateY(-1px); /* Más sutil */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Sombra más notable */
+}
+
+/* --- ESTILOS PEQUEÑOS DE BOTONES/ACCIONES --- */
+.btn-small {
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* --- ESTILO SECUNDARIO (para acciones neutras o de cancelación) --- */
+.btn-secondary {
+    background-color: var(--color-text-faded); /* Gris neutro */
+    color: var(--color-white);
+}
+
+.btn-secondary:hover {
+    background-color: #95A5A6; /* Gris un poco más oscuro */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+
+/* === MENSAJES FLASH (Alertas) === */
+.flashes {
+    list-style: none;
+    padding: 0;
+    /* Posiciona las alertas arriba en el centro, fija */
+    position: fixed; 
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+    width: 100%;
+    max-width: 900px;
+}
+
+.flashes li {
+    padding: 15px 25px;
+    border-radius: 10px; /* Bordes más suaves */
+    margin-bottom: 10px;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 4px 15px var(--color-shadow-medium);
+    /* Animación de entrada */
+    animation: fadeInDown 0.5s ease-out;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.success {
+    background-color: var(--color-success);
+    color: var(--color-white);
+}
+
+.danger {
+    background-color: var(--color-danger);
+    color: var(--color-white);
+}
+
+.warning {
+    background-color: var(--color-warning);
+    color: var(--color-text-dark); /* Texto oscuro para la advertencia */
+}
+
+/* ========================================================= */
+/* === 1. ESTILO DE LOGIN (DISEÑO ORGÁNICO) === */
+/* ========================================================= */
+
+.login-body {
+    background-color: var(--color-login-bg); 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    /* Patrón de fondo más sutil */
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23663a3a' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zm0-30V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-size: 150px;
+}
+
+/* Ocultar el dashboard si estamos en el body del login */
+.login-body .dashboard-layout,
+.login-body .sidebar {
+    display: none !important;
+}
+
+/* Contenedor principal del Login */
+.login-container {
+    display: flex;
+    width: 900px;
+    height: 550px;
+    background-color: var(--color-card-bg);
+    border-radius: 25px; /* Más redondeado */
+    box-shadow: 0 20px 50px var(--color-shadow-medium); /* Sombra más profunda */
+    overflow: hidden;
+    position: relative; 
+    z-index: 10;
+}
+
+/* Lado Izquierdo (Contenedor base para la curva) */
+.login-left {
+    flex: 1; 
+    background-color: var(--color-card-bg); 
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    z-index: 1; 
+}
+
+/* CLAVE 1: Pseudo-elemento - FORMA CURVA Y ROSADA PÁLIDA */
+.login-left::before {
+    content: '';
+    position: absolute;
+    width: 220%; /* Aumento de tamaño para mejor cobertura */
+    height: 130%;
+    background-color: var(--color-login-left-bg); 
+    top: -15%; /* Ajuste de posición */
+    left: -15%;
+    
+    /* Forma orgánica más dinámica */
+    border-radius: 45% 55% 65% 35% / 45% 55% 55% 65%; 
+    
+    transform: rotate(18deg); /* Rotación ligera */
+    z-index: 10;
+}
+
+/* CLAVE 2: Pseudo-elemento - FORMA DECORATIVA INTERNA (Nubes) */
+.login-left::after {
+    content: '';
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    background-color: rgba(255, 255, 255, 0.25); /* Más visible */
+    border-radius: 60% 40% 70% 30% / 60% 40% 70% 30%; 
+    top: 55%;
+    left: 45%;
+    transform: translate(-50%, -50%) rotate(-45deg); /* Rotación y ajuste */
+    z-index: 11;
+}
+
+/* --- LOGO Y TEXTO DE MARCA --- */
+.login-left .brand-logo {
+    position: absolute; 
+    top: 30px;
+    left: 30px;
+    display: flex;
+    align-items: center;
+    z-index: 20; 
+    color: var(--color-text-dark);
+    padding: 10px 0; 
+}
+
+.login-left .brand-logo img {
+    width: 50px; /* Tamaño ligeramente reducido */
+    height: 50px;
+    object-fit: contain;
+    margin-right: 15px; 
+}
+
+.login-left .brand-logo span {
+    font-size: 1.4em; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- ESTILOS DE LA IMAGEN DECORATIVA --- */
+.login-left .imagen-decorativa-container {
+    position: absolute;
+    top: 100px; /* Posicionado un poco más alto */
+    left: 0;
+    right: 0;
+    text-align: center;
+    z-index: 15; 
+    padding: 0 30px;
+    width: 100%;
+}
+
+.login-left .imagen-decorativa-container .imagen-decorativa-login {
+    width: 90%; /* Más grande dentro del contenedor */
+    max-width: 350px;
+    height: auto;
+    object-fit: contain;
+    margin-top: 30px; 
+    border-radius: 8px;
+}
+
+.login-left .footer-left {
+    position: absolute;
+    bottom: 25px; /* Más abajo */
+    left: 30px;
+    font-size: 0.9em; /* Ligeramente más grande */
+    color: var(--color-text-dark);
+    z-index: 20;
+    font-weight: 500;
+}
+
+/* Lado Derecho (Formulario) */
+.login-right {
+    flex: 1;
+    background-color: var(--color-card-bg);
+    padding: 50px 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.login-right h2 {
+    font-size: 2.3rem; /* Ligeramente más grande */
+    font-weight: 800; /* Más audaz */
+    color: var(--color-text-dark);
+    margin-bottom: 35px;
+    text-transform: capitalize;
+}
+
+.login-right .form-group {
+    margin-bottom: 20px;
+}
+
+.login-right .form-label {
+    font-weight: 600;
+    color: var(--color-text-dark);
+    margin-bottom: 8px; /* Más espacio */
+    display: block;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+.login-right .form-control {
+    background-color: var(--color-input-bg-login);
+    border: 1px solid var(--color-border-light);
+}
+
+.login-right .forgot-password {
+    color: var(--color-primary-red);
+    font-size: 0.95em;
+    display: block;
+    text-align: right;
+    margin-top: 5px;
+}
+
+.login-right .login-button {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.login-right .register-link {
+    text-align: center;
+    margin-top: 30px;
+    color: var(--color-text-faded);
+    font-size: 0.95rem;
+}
+
+.login-right .register-link a {
+    color: var(--color-primary-red);
+    font-weight: 700; /* Más audaz */
+    display: inline;
+}
+
+.login-right .login-footer-right {
+    text-align: center;
+    font-size: 0.85em;
+    color: var(--color-text-faded);
+    padding-top: 20px;
+}
+
+.login-right .login-footer-right a {
+    color: var(--color-primary-red);
+    text-decoration: underline; /* Subrayado para accesibilidad */
+    text-decoration-color: var(--color-primary-red-dark);
+}
+
+/* Ocultamos las viejas clases de login para evitar conflictos */
+.login-page, .login-form-card { 
+    display: none !important;
+}
+
+/* FIN DE LA SECCIÓN DE LOGIN */
+/* ========================================================= */
+
+/* ========================================================= */
+/* === 2. DASHBOARD LAYOUT === */
+/* ========================================================= */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 260px; /* Ligeramente más ancho */
+    background-color: var(--color-sidebar-dark);
+    color: var(--color-text-light);
+    padding: 30px 0; /* Padding superior e inferior para espacio */
+    box-shadow: 6px 0 10px rgba(0, 0, 0, 0.2); /* Sombra más fuerte */
+    display: flex;
+    flex-direction: column;
+    position: fixed; /* Fija para scroll de contenido */
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 50;
+}
+
+.sidebar-header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--color-sidebar-accent); /* Borde sutil */
+    padding-bottom: 25px;
+}
+
+.profile-pic {
+    width: 60px;
+    height: 60px;
+    background-color: var(--color-secondary-emphasis); /* Color de énfasis */
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2.2rem;
+    color: var(--color-sidebar-dark); /* Color del icono/letra dentro del círculo */
+    font-weight: 700;
+}
+
+.sidebar-header h2 {
+    font-size: 1.25rem;
+    color: var(--color-white);
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.sidebar-header p {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    opacity: 0.7;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+.sidebar-nav li a {
+    display: flex;
+    align-items: center;
+    padding: 18px 30px; /* Más padding vertical */
+    color: var(--color-text-light);
+    text-decoration: none;
+    transition: background-color 0.3s, border-left 0.3s, color 0.3s;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.sidebar-nav li a i { 
+    margin-right: 15px;
+    font-size: 1.2rem;
+    transition: color 0.3s;
+}
+
+/* Hover de Sidebar: Ligeramente más oscuro para mejor contraste */
+.sidebar-nav li a:hover,
+.sidebar-nav li a.active {
+    background-color: var(--color-sidebar-accent); /* Color de acento para hover */
+    color: var(--color-white);
+    border-left: 6px solid var(--color-secondary-emphasis); /* Borde más visible */
+    padding-left: 24px; /* Ajuste para el borde */
+}
+
+.sidebar-nav li a.active i {
+    color: var(--color-secondary-emphasis); /* Icono del elemento activo en color de énfasis */
+}
+
+/* Contenido Principal del Dashboard */
+.dashboard-content {
+    flex-grow: 1;
+    padding: 30px;
+    background-color: var(--color-light-bg);
+    margin-left: 260px; /* Para hacer espacio al sidebar fijo */
+}
+
+.dashboard-content h1 {
+    color: var(--color-text-dark);
+    margin-bottom: 35px;
+    font-size: 2.2rem;
+    border-bottom: 3px solid var(--color-border-light); /* Borde más grueso */
+    padding-bottom: 15px;
+    font-weight: 700;
+}
+
+/* Contenedor de Tarjetas (Cards) */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Más flexible */
+    gap: 30px; /* Más espacio */
+    margin-bottom: 30px;
+}
+
+.card {
+    background-color: var(--color-card-bg);
+    padding: 30px; /* Más padding */
+    border-radius: 12px; /* Más redondeado */
+    box-shadow: 0 8px 20px var(--color-shadow-light); /* Sombra más suave y moderna */
+    border-left: 6px solid var(--color-primary-red); /* Borde más grueso */
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-5px); /* Efecto 3D al pasar el mouse */
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card-title {
+    font-size: 0.95rem;
+    color: var(--color-text-faded); /* Gris sutil */
+    margin-bottom: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.card-value {
+    font-size: 2.8rem;
+    font-weight: 800; /* Más audaz */
+    color: var(--color-primary-red);
+    line-height: 1.1;
+}
+
+.card-sub-info {
+    font-size: 0.9rem;
+    color: var(--color-text-faded);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--color-border-light);
+}
+
+/* === TABLAS DE DATOS === */
+.data-table-container {
+    background-color: var(--color-card-bg);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px var(--color-shadow-light);
+    margin-top: 30px;
+    overflow-x: auto; 
+}
+
+.data-table-container h3 {
+    color: var(--color-text-dark);
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--color-border-light);
+    padding-bottom: 10px;
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: separate; /* Para usar border-radius en th */
+    border-spacing: 0;
+    min-width: 750px;
+}
+
+.data-table th, .data-table td {
+    padding: 16px;
+    text-align: left;
+}
+
+.data-table th {
+    background-color: var(--color-primary-red);
+    color: var(--color-white);
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+}
+
+/* Bordes redondeados en la cabecera */
+.data-table th:first-child {
+    border-top-left-radius: 8px;
+}
+.data-table th:last-child {
+    border-top-right-radius: 8px;
+}
+
+.data-table td {
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.data-table tr:nth-child(even) {
+    background-color: var(--color-light-bg); /* Usar el color de fondo para filas pares */
+}
+
+/* === ESTILO PARA EL FLUJO DEL PACIENTE (SIN DASHBOARD) === */
+
+/* Tarjeta principal del flujo (usada en base_paciente.html) */
+.patient-flow-card {
+    background-color: var(--color-card-bg);
+    padding: 40px 50px;
+    border-radius: 20px; /* Más redondeado */
+    box-shadow: 0 15px 40px var(--color-shadow-medium);
+    width: 90%; 
+    max-width: 700px; /* Más ancho */
+    text-align: center;
+    z-index: 10;
+    margin: 50px auto; 
+}
+
+.patient-flow-card h2 {
+    color: var(--color-primary-red);
+    font-size: 2rem;
+    margin-bottom: 25px;
+    font-weight: 700;
+}
+
+/* Estilo para los resultados (Positivo/Negativo) */
+.resultado-box {
+    padding: 20px;
+    border-radius: 10px;
+    margin: 30px auto;
+    max-width: 400px; 
+    font-weight: 700;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.resultado-box h3 {
+    margin-top: 0;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+}
+
+.resultado-texto {
+    font-size: 2.5rem; /* Más grande */
+    margin: 15px 0 10px;
+    line-height: 1.1;
+}
+
+.positivo {
+    background-color: var(--color-danger); /* Rojo fuerte */
+    color: var(--color-white);
+}
+
+.negativo {
+    background-color: var(--color-success); /* Verde fuerte */
+    color: var(--color-white);
+}
+
+/* Contenedor del video */
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; 
+    height: 0;
+    overflow: hidden;
+    margin-bottom: 30px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* === MEDIA QUERIES PARA RESPONSIVIDAD === */
+@media (max-width: 1024px) {
+    /* Ajustes generales de tamaño para tablets */
+    .login-container {
+        width: 90%;
+        height: auto;
+        flex-direction: column;
+        max-width: 600px;
+    }
+    
+    .login-left {
+        min-height: 300px; /* Altura mínima para el lado izquierdo */
+        border-bottom-left-radius: 0;
+        border-top-right-radius: 25px;
+        order: 1;
+    }
+
+    .login-left::before, .login-left::after {
+        display: none; /* Oculta las curvas en móviles/tablets para simplificar */
+    }
+    
+    .login-left .imagen-decorativa-container {
+        position: relative;
+        top: 0;
+        margin-top: 30px;
+    }
+    
+    .login-left .footer-left {
+        position: relative;
+        bottom: auto;
+        left: auto;
+        margin-top: 20px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .login-right {
+        padding: 40px 30px;
+        order: 2;
+    }
+
+    .dashboard-layout {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        padding: 20px 0;
+        box-shadow: 0 4px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-header {
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+    }
+
+    .sidebar-nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .sidebar-nav li a {
+        padding: 10px 15px;
+        border-left: none !important;
+        border-radius: 8px;
+    }
+    
+    .sidebar-nav li a i {
+        margin-right: 8px;
+    }
+    
+    .sidebar-nav li a:hover,
+    .sidebar-nav li a.active {
+        border-left: none;
+        background-color: var(--color-sidebar-accent);
+    }
+    
+    .dashboard-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+    
+    .card-grid {
+        gap: 20px;
+    }
+}
+
+@media (max-width: 600px) {
+    /* Ajustes para smartphones */
+    .login-container {
+        border-radius: 15px;
+    }
+    
+    .login-right h2 {
+        font-size: 1.8rem;
+    }
+
+    .patient-flow-card {
+        padding: 30px 20px;
+        margin: 20px auto;
+    }
+}
+
+/* AÑADE ESTOS ESTILOS */
+
+/* 1. Estilos del contenedor de la barra superior */
+.top-sidebar-header {
+    background-color: #2C3E50; /* ¡Ajusta este color al de tu sidebar izquierdo! */
+    color: white;
+    padding: 20px 25px; /* Relleno para que tenga altura */
+    margin-left: 0px; /* IMPORTANTE: Deja espacio para el sidebar izquierdo */
+    position: sticky;
+    top: 0;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.top-header-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.top-header-subtitle {
+    font-size: 1.0rem;
+    opacity: 0.8;
+    margin: 0;
+}
+
+/* 2. Ajusta el espacio para el contenido principal */
+/* Si tu sidebar lateral tiene 250px de ancho, asegúrate de que el margen se aplique al contenedor principal */
+/* Si ya tienes un contenedor para el contenido principal, verifica que tenga un 'margin-left: 260px' */
+
+/* EJEMPLO DE AJUSTE (Si tu layout es estándar de Flask/Bootstrap) */
+.main-layout { /* Si tienes un div envolviendo todo el contenido fuera del sidebar */
+    margin-left: 260px;
+}
+
+/* Estilos necesarios para la cuadrícula y campos de formulario */
+
+/* Contenedor principal de la sección (Si ya lo tienes en base.css, ignora) */
+.dashboard-section { 
+    width: 100%; 
+    padding: 30px; 
+    box-sizing: border-box; 
+}
+
+/* Estilo para la tarjeta/caja del formulario */
+.form-container.card { 
+    max-width: 1400px; 
+    padding: 40px; 
+    margin-bottom: 30px; 
+    background-color: #fff; /* Fondo blanco */
+    border-radius: 8px; /* Bordes redondeados */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+    border-left: 5px solid var(--color-dark-sidebar, #1A237E); /* Barra lateral azul */
+}
+
+/* Estilo de Cuadrícula (Dos Columnas) */
+.form-grid { 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    gap: 30px 25px; 
+    margin-bottom: 25px; 
+}
+
+/* Estilos de etiquetas y campos (Similares a tu imagen) */
+.form-container label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-weight: 600; 
+    color: #333; 
+    text-align: left; 
+    font-size: 1.1em; /* Un poco más grande para coincidir con tu imagen */
+}
+.form-container input { 
+    margin-bottom: 0; 
+    width: 100%; 
+    padding: 12px; 
+    box-sizing: border-box; 
+    border: 1px solid #ccc; 
+    border-radius: 6px; 
+    font-size: 16px; 
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* Estilo de focus (Borde rojo/azul de tu captura) */
+.form-container input:focus {
+    border-color: #C0392B; /* Color principal de la app (Rojo) */
+    box-shadow: 0 0 0 3px rgba(192, 57, 43, 0.2); 
+    outline: none;
+}
+
+/* Estilo del botón (Rojo principal) */
+.btn { 
+    width: 100%; 
+    padding: 15px; 
+    background-color: #C0392B; 
+    color: white; 
+    border: none; 
+    border-radius: 6px; 
+    font-size: 16px; 
+    font-weight: bold;
+    cursor: pointer; 
+    transition: background-color 0.3s; 
+    margin-top: 5px; 
+}
+.btn:hover { 
+    background-color: #A93226; 
+}
+
+/* Estilos de mensajes y enlaces */
+.description-text { 
+    margin-bottom: 25px; 
+    line-height: 1.6; 
+    color: #555; 
+}
+.back-link { 
+    display: inline-block; 
+    margin-top: 20px; 
+    color: #C0392B; 
+    font-weight: 500; 
+}
+.alert-success { /* Para mensajes de éxito */
+    background-color: #d4edda; 
+    color: #155724;
+}
+
+/* Media Query para diseño responsivo */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* Una columna en móviles */
+        gap: 20px;
+    }
+}
+
+/* ========================================================= */
+/* === 3. ESTILOS ESPECÍFICOS DEL FORMULARIO GENERAR QR === */
+/* ========================================================= */
+
+/* Contenedor principal de la sección */
+.dashboard-section { 
+    width: 100%; 
+    padding: 30px; 
+    box-sizing: border-box; 
+}
+
+/* Estilo para la tarjeta/caja del formulario (El borde usa tu color de énfasis) */
+.form-container.card { 
+    max-width: 100%; /* Usamos el 100% para ajustarse al content */
+    padding: 40px; 
+    margin-bottom: 30px; 
+    background-color: var(--color-card-bg); 
+    border-radius: 8px; 
+    box-shadow: 0 4px 12px var(--color-shadow-light); 
+    /* Usamos el color de acento de tu sidebar para el borde lateral */
+    border-left: 5px solid var(--color-secondary-emphasis); 
+}
+
+/* 🚨 CLAVE: Estilo de Cuadrícula (Dos Columnas) */
+.form-grid { 
+    display: grid; 
+    /* ¡Ajuste para asegurar dos columnas iguales en anchos grandes! */
+    grid-template-columns: 1fr 1fr; 
+    gap: 30px 25px; 
+    margin-bottom: 30px; 
+}
+
+/* Estilos de etiquetas */
+.form-container label { 
+    display: block; 
+    margin-bottom: 8px; 
+    font-weight: 600; 
+    color: var(--color-text-dark); /* Color de texto oscuro */
+    text-align: left; 
+    font-size: 1.05em; 
+}
+
+/* Estilos de campos (Input general ya se define arriba, pero ajustamos el foco) */
+.form-container input:focus {
+    /* Usamos tu variable de rojo principal */
+    border-color: var(--color-primary-red); 
+    /* Usamos tu variable de rojo con transparencia para la sombra */
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.25); 
+    outline: none;
+}
+
+/* Estilo del botón de formulario (usa la clase btn-primary ya definida) */
+.btn-full-width {
+    width: 100%;
+    margin-top: 15px;
+    padding: 15px; /* Más padding para el botón principal */
+}
+
+/* Estilos de mensajes y enlaces */
+.description-text { 
+    margin-bottom: 25px; 
+    line-height: 1.6; 
+    color: var(--color-text-faded); 
+}
+.back-link { 
+    display: inline-block; 
+    margin-top: 25px; 
+    color: var(--color-primary-red); 
+    font-weight: 600; 
+}
+.back-link:hover { 
+    text-decoration: underline; 
+}
+
+/* 🚨 CLAVE: Media Query para diseño responsivo */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr; /* Una columna en móviles */
+        gap: 20px;
+    }
+    .form-container.card {
+        padding: 20px;
+    }
+}

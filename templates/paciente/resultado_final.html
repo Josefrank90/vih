@@ -1,0 +1,66 @@
+{% extends "base_simple.html" %}
+
+{% block title %}Resultado Final{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card p-5 shadow-lg text-center">
+                <h2 class="text-danger mb-4">Paso Final: Resultados de la Autoprueba VIH</h2>
+
+                {% if resultado == 'Negativo' %}
+                    <div class="alert alert-success p-4 mb-4">
+                        <h3 class="mb-0">Tu Resultado es:</h3>
+                        <strong style="font-size: 2.5rem; display: block;">Negativo</strong>
+                    </div>
+                    
+                    <h4 class="mt-4 text-success">Recomendaciones Importantes (Negativo)</h4>
+                    <p class="text-start">
+                        ✅ **Prevención Continua:** Un resultado negativo significa que no se detectaron anticuerpos contra el VIH en el momento de la prueba. Sin embargo, si ha tenido exposiciones recientes, considere hacerse una nueva prueba.
+                    </p>
+                    <p class="text-start">
+                        ✅ **Prácticas Seguras:** Recuerda el uso correcto del **preservativo** en todas tus relaciones sexuales para mantener el estado negativo y prevenir otras Infecciones de Transmisión Sexual (ITS).
+                    </p>
+
+                {% elif resultado == 'Positivo' %}
+                    <div class="alert alert-danger p-4 mb-4">
+                        <h3 class="mb-0">Tu Resultado es:</h3>
+                        <strong style="font-size: 2.5rem; display: block;">Positivo</strong>
+                    </div>
+                    
+                    <h4 class="mt-4 text-danger">Recomendaciones URGENTES (Positivo)</h4>
+                    <p class="text-start">
+                        🔴 **Pasos Siguientes:** Un resultado positivo requiere una **prueba de confirmación** en un centro de salud.
+                    </p>
+                    <p class="text-start">
+                        🔴 **Atención Médica:** Es fundamental que contactes inmediatamente a un profesional de la salud o acudas a la clínica donde se te proporcionó el código QR. El tratamiento temprano es crucial para una vida saludable.
+                    </p>
+                    <p class="text-start fw-bold">
+                        🔴 Tu información es estrictamente confidencial.
+                    </p>
+
+                {% else %}
+                    <p class="text-warning">Resultado no encontrado. Por favor, contacte a soporte.</p>
+                {% endif %}
+
+                <hr class="mt-4 mb-4">
+
+                <a href="#" onclick="window.close();" class="btn btn-secondary w-100 py-2">
+                    FINALIZAR Y SALIR
+                </a>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Estilos para el botón Finalizar */
+    .btn-secondary { background-color: #6C757D; border-color: #6C757D; }
+    .btn-secondary:hover { background-color: #5A6268; border-color: #545B62; }
+    .alert-success { background-color: #D4EDDA; border-color: #C3E6CB; color: #155724; }
+    .alert-danger { background-color: #F8D7DA; border-color: #F5C6CB; color: #721C24; }
+    .card { border-radius: 15px; }
+</style>
+{% endblock content %}

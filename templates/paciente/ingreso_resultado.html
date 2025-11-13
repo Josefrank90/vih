@@ -1,0 +1,41 @@
+{% extends "base_simple.html" %}
+
+{% block title %}Resultado Autoprueba{% endblock %}
+
+{% block content %}
+<div class="card p-5 shadow-lg">
+    <h2 class="text-center text-danger">Paso Final: Ingresa tu Resultado</h2>
+    <p class="text-center lead">Paciente: <strong>{{ nombre_paciente }}</strong></p>
+    
+    <p class="text-muted text-center">
+        Selecciona el resultado que obtuviste en tu prueba de autodiagnóstico VIH. 
+        Este paso es irreversible y confidencial.
+    </p>
+
+    <form method="POST" action="{{ url_for('paciente_bp.guardar_resultado') }}">
+        
+        <div class="form-group mb-5 text-center">
+            <label class="form-label d-block mb-3 h4">Resultado de la Prueba:</label>
+            
+            <div class="form-check form-check-inline mx-4">
+                <input class="form-check-input" type="radio" name="resultado" id="resultadoNegativo" value="Negativo" required style="transform: scale(1.5);">
+                <label class="form-check-label text-success fw-bold" for="resultadoNegativo" style="font-size: 1.5rem;">
+                    Negativo
+                </label>
+            </div>
+            
+            <div class="form-check form-check-inline mx-4">
+                <input class="form-check-input" type="radio" name="resultado" id="resultadoPositivo" value="Positivo" required style="transform: scale(1.5);">
+                <label class="form-check-label text-danger fw-bold" for="resultadoPositivo" style="font-size: 1.5rem;">
+                    Positivo
+                </label>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-danger w-100 py-2">
+            GUARDAR RESULTADO Y VER RECOMENDACIONES
+        </button>
+        
+    </form>
+</div>
+{% endblock content %}

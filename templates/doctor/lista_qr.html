@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de QRs Generados{% endblock %}
+
+{% block content %}
+
+    <div class="header-content">
+        <h1>Códigos QR Generados</h1>
+        <p>Estado de los códigos generados: quién lo vinculó, si fue completado, y la opción de descargar el PDF.</p>
+    </div>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>CÓDIGO QR (Inicio)</th>
+                    <th>Campaña</th>
+                    <th>Estado</th>
+                    <th>Resultado Evaluación</th>
+                    <th>Paciente Vinculado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for qr in qrs_generados %} 
+                <tr>
+                    <td>{{ qr.codigo_qr[:8] if qr.codigo_qr else 'N/A' }}...</td> 
+                    
+                    <td>{{ qr.numero_campana if qr.numero_campana else 'Sin Campaña' }}</td>
+                    
+                    <td>{{ qr.estado if qr.estado else 'Pendiente' }}</td>
+                    
+                    <td>{{ qr.resultado if qr.resultado else 'N/A' }}</td>
+                    
+                    <td>{{ qr.paciente_vinculado if qr.paciente_vinculado and qr.paciente_vinculado != 'N/A' else 'No Vinculado' }}</td>
+                    
+                    <td>
+                        <a href="{{ url_for('doctor_bp.descargar_qr', codigo_qr=qr.codigo_qr) }}" class="btn-descarga">
+                            Descargar PDF
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6">No se han generado códigos QR o no hay datos.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p style="margin-top: 20px;">
+        <a href="{{ url_for('doctor_bp.dashboard') }}">← Volver al Panel de Control</a>
+    </p>
+{% endblock %}

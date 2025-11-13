@@ -1,0 +1,28 @@
+{# templates/paciente/bienvenida.html #}
+
+{% extends "base_paciente.html" %} 
+
+{% block title %}Bienvenido/a al Test{% endblock %}
+
+{% block patient_content %}
+    <div class="card text-center p-4">
+        <h1>¡Bienvenido/a!</h1>
+        <p class="lead">
+            Has escaneado tu código QR correctamente. Estás a punto de iniciar el proceso de la autoprueba VIH.
+            <br>Toda la información es estrictamente confidencial.
+        </p>
+        
+        <hr>
+        
+        <p>
+            Presiona el botón **Acceder** para comenzar con el video informativo y continuar con el cuestionario.
+        </p>
+
+        <form action="{{ url_for('paciente_bp.siguiente_paso') }}" method="GET" style="margin-top: 30px;">
+            <button type="submit" class="btn btn-primary btn-lg">
+                Acceder y Ver Video
+            </button>
+        </form>
+        
+    </div>
+{% endblock %}

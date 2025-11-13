@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Doctor{% endblock %}
+
+{# ================================================================= #}
+{# BLOQUE PARA LA NUEVA BARRA SUPERIOR (TOP SIDEBAR)                 #}
+{# Esto sobrescribe el contenido por defecto en el bloque de base.html #}
+{# ================================================================= #}
+{% block top_header_content %}
+    <h3 class="top-header-title">Panel del Doctor</h3>
+    <p class="top-header-subtitle">Bienvenido, {{ session.get('username', 'Doctor') }}. Revise el estado general del sistema.</p>
+{% endblock %}
+{# ================================================================= #}
+
+{% block content %}
+{# NOTA: El <h1> "Dashboard del Doctor" se elimina porque el título ahora está en la barra superior. #}
+
+<div class="card-grid">
+    <div class="card">
+        <div class="card-title">QRs Generados</div>
+        <div class="card-value">{{ qrs_generados }}</div>
+        <div class="card-description">Total de códigos QR entregados.</div>
+    </div>
+    <div class="card">
+        <div class="card-title">QRs Vinculados</div>
+        <div class="card-value">{{ qrs_vinculados }}</div>
+        <div class="card-description">Códigos QR ya asociados a un paciente.</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Pacientes Positivos</div>
+        <div class="card-value">{{ pacientes_positivos }}</div> 
+        <div class="card-description">Resultados positivos registrados.</div>
+    </div>
+</div>
+
+<div class="data-table-container">
+    <h3>Últimos QRs Generados</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Código QR</th>
+                <th>Estado</th>
+                <th>Paciente Vinculado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if ultimos_qrs_tabla %}
+                {% for qr in ultimos_qrs_tabla %}
+                <tr>
+                    <td>{{ qr.codigo_qr }}</td>
+                    <td><span class="status-{{ qr.estado|lower }}">{{ qr.estado }}</span></td>
+                    <td>{% if qr.paciente_vinculado %}{{ qr.paciente_vinculado }}{% else %}N/A{% endif %}</td> 
+                    <td>
+                        <a href="{{ url_for('doctor_bp.descargar_qr', codigo_qr=qr.codigo_qr) }}" class="btn btn-small"><i class="fas fa-download"></i> PDF</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4">No se han generado QRs aún.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Lista de Pacientes{% endblock %}
+
+{% block content %}
+<div class="dashboard-section">
+    <h1>Pacientes Registrados</h1>
+    <p class="description-text">
+        Lista de todos los pacientes que han sido registrados y vinculados a un código QR.
+    </p>
+
+    {% if pacientes %}
+        <div class="table-responsive card">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID Paciente</th>
+                        <th>Nombre Completo</th>
+                        <th>Edad</th>
+                        <th>Sexo</th>
+                        <th>Resultado</th>
+                        <th>Código QR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paciente in pacientes %}
+                    <tr>
+                        <td>{{ paciente.paciente_id }}</td>
+                        <td>{{ paciente.nombre }} {{ paciente.apellido_paterno }}</td>
+                        <td>{{ paciente.edad }}</td>
+                        <td>{{ paciente.sexo }}</td>
+                        <td>
+                            <span class="resultado-{{ paciente.resultado | lower }}">
+                                {{ paciente.resultado }}
+                            </span>
+                        </td>
+                        <td>{{ paciente.qr_codigo }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> No hay pacientes registrados y vinculados con un código QR aún.
+        </div>
+    {% endif %}
+
+</div>
+{% endblock content %}

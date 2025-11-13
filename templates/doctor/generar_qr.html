@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Generar Nuevo QR{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+        /*
+        * Variables de color y estilos de la tarjeta contenedora y la cuadrícula
+        */
+        :root {
+            --color-primary-red: #D32F2F;
+            --color-secondary-emphasis: #F98F1D; 
+            --color-card-bg: #FFFFFF;
+            --color-shadow-light: rgba(0, 0, 0, 0.08);
+            --color-text-dark: #2C3E50;
+            --color-text-faded: #7F8C8D;
+            --color-border-light: #DCE1E7;
+            --color-primary-red-dark: #A52A2A;
+            --color-white: #FFFFFF;
+        }
+
+        .form-container.card { 
+            max-width: 100%; 
+            padding: 40px; 
+            margin-bottom: 30px; 
+            background-color: var(--color-card-bg); 
+            border-radius: 8px; 
+            box-shadow: 0 4px 12px var(--color-shadow-light); 
+            border-left: 5px solid var(--color-secondary-emphasis);
+        }
+        
+        .form-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 30px 25px; 
+            margin-bottom: 30px; 
+        }
+
+        .form-container label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: 600; 
+            color: var(--color-text-dark); 
+            text-align: left; 
+            font-size: 1.05em; 
+        }
+
+        .form-container input, .form-container select, .form-container textarea {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 0;
+            border: 1px solid var(--color-border-light);
+            border-radius: 8px;
+            font-size: 1rem;
+            color: var(--color-text-dark);
+            background-color: var(--color-card-bg);
+            transition: border-color 0.3s, box-shadow 0.3s;
+            box-sizing: border-box;
+        }
+        
+        .form-container input:focus, .form-container select:focus, .form-container textarea:focus {
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2); 
+            outline: none;
+        }
+
+        .btn-primary.btn-full-width {
+            width: 100%;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--color-primary-red);
+            color: var(--color-white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s;
+            text-transform: uppercase; 
+        }
+
+        .btn-primary.btn-full-width:hover {
+            background-color: var(--color-primary-red-dark);
+        }
+
+        .description-text { 
+            margin-bottom: 25px; 
+            line-height: 1.6; 
+            color: var(--color-text-faded); 
+        }
+        
+        /* Estilo para los selectores múltiples */
+        .select-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Espacio entre selectores */
+        }
+
+        /* --- Media Query para volver a 1 columna en móviles --- */
+        @media (max-width: 768px) {
+            .form-grid {
+                grid-template-columns: 1fr; 
+                gap: 20px;
+            }
+            .form-container.card {
+                padding: 20px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{# OPCIONAL: Personaliza el encabezado superior del panel #}
+{% block top_header_content %}
+    <h3 class="top-header-title">Generar Nuevo Código QR</h3>
+    <p class="top-header-subtitle">Gestión de campañas de autoprueba.</p>
+{% endblock %}
+
+{% block content %}
+
+<div class="form-container card">
+    <p class="description-text">
+        Ingrese los detalles de la campaña y la cantidad de códigos QR que desea generar. Los códigos **se registrarán y estarán disponibles para descarga en la tabla del Dashboard**.
+    </p>
+
+    <form method="POST"> 
+        
+        <div class="form-grid">
+            
+            <div class="grid-item">
+                <label for="campaign_number">1. Número de Campaña:</label>
+                <input type="text" id="campaign_number" name="campaign_number" required 
+                       placeholder="Ej: Campaña Invierno 2023" value="{{ data.campaign_number | default('') }}">
+            </div>
+            
+            <div class="grid-item">
+                <label for="estado_id">2. Estado Geográfico:</label>
+                <select id="estado_id" name="estado_id" required>
+                    <option value="">-- Seleccione un Estado --</option>
+                    {# La variable 'estados' se pasa desde el controlador doctor_bp.generar_qr #}
+                    {% for estado in estados %}
+                        <option value="{{ estado.id }}" 
+                                {% if estado.id|string == data.estado_id %}selected{% endif %}>
+                            {{ estado.nombre }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="grid-item">
+                <label for="municipio_id">3. Lugar de Entrega (Municipio):</label>
+                <select id="municipio_id" name="municipio_id" required disabled>
+                    <option value="">-- Seleccione un Municipio --</option>
+                </select>
+            </div>
+
+            <div class="grid-item" id="colonia-group"> 
+                <label for="colonia_id">4. Localidad (Colonia):</label>
+                <select id="colonia_id" name="colonia_id" required disabled>
+                    <option value="">-- Seleccione una Localidad --</option>
+                </select>
+            </div>
+
+            <div class="grid-item">
+                <label for="delivery_date">5. Fecha de Entrega (Prevista):</label>
+                <input type="date" id="delivery_date" name="delivery_date" required
+                       value="{{ data.delivery_date | default(today) }}">
+            </div>
+
+            <div class="grid-item">
+                <label for="quantity">6. Cantidad de Códigos QR a Generar:</label>
+                <input type="number" id="quantity" name="quantity" required 
+                       min="1" max="100" value="{{ data.quantity | default(1) }}">
+            </div>
+            
+        </div>
+        
+        <button type="submit" class="btn-primary btn-full-width">
+            GENERAR QR Y DESCARGAR LOTE (PDF)
+        </button>
+    </form>
+
+    <a href="{{ url_for('doctor_bp.dashboard') }}" class="back-link">
+        &larr; Volver al Panel de Control
+    </a>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
+
+
+   

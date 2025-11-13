@@ -1,0 +1,95 @@
+{% extends 'base_simple.html' %} 
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+
+{# Nota: Asumimos que base_simple.html carga static/css/style.css, donde está todo el diseño del login. #}
+
+<div class="login-container">
+    {# Columna Izquierda: Logo, Ilustración Roja #}
+    <div class="login-left">
+        <div class="brand-logo">
+            {# 1. IMAGEN DEL LOGO (Los doctores) #}
+            {# <span>INSTITUCIÓN SALUD</span> #}
+        </div>
+        
+        {# 2. LA NUEVA IMAGEN DECORATIVA AÑADIDA AQUÍ #}
+        <div class="imagen-decorativa-container">
+             <img src="{{ url_for('static', filename='assets/img/2222.jpg') }}" 
+                  alt="Ilustración Decorativa" 
+                  class="imagen-decorativa-login">
+        </div>
+        
+        <div class="footer-left">
+            <p>&copy; 2024 Institución de Salud</p>
+        </div>
+    </div>
+
+    {# Columna Derecha: Formulario de Login #}
+    <div class="login-right">
+        <div class="login-form-area">
+            <h2>Iniciar Sesión</h2>
+            
+            {# Bloque de Mensajes Flash #}
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {# CRÍTICO: Añadimos la clase 'flash-message-area' para JS #}
+                    <div class="flashes flash-message-area"> 
+                        {% for category, message in messages %}
+                            {# La categoría 'success' es el mensaje de cierre de sesión #}
+                            <li class="{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {# -------- SCRIPT PARA OCULTAR MENSAJES AUTOMÁTICAMENTE -------- #}
+            <script>
+                // Buscamos el contenedor principal de los mensajes flash
+                const flashArea = document.querySelector('.flash-message-area');
+                
+                // Si encontramos el área de mensajes y tiene contenido (el mensaje verde)
+                if (flashArea && flashArea.children.length > 0) {
+                    // La función setTimeout oculta el contenedor después de 5 segundos
+                    setTimeout(() => {
+                        // Usamos fadeOut o simplemente ocultamos si no tienes una librería como jQuery.
+                        // Para JS puro:
+                        flashArea.style.display = 'none'; 
+                        
+                        // Si quieres una animación de "fade-out", tendrías que usar CSS transitions.
+                        // Por simplicidad, usamos display: none.
+                        
+                    }, 5000); // 5000 milisegundos = 5 segundos
+                }
+            </script>
+            {# ---------------------------------------------------------------- #}
+
+            <form method="POST" action="{{ url_for('auth_bp.login') }}">
+                <div class="mb-3">
+                    <label for="usuario" class="form-label">Usuario</label>
+                    <input type="text" class="form-control" id="usuario" name="usuario" placeholder="Ingresa tu usuario" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Ingresa tu contraseña" required>
+                    {# Texto de Olvidaste contraseña #}
+                     
+                </div>
+                <button type="submit" class="btn-primary login-button">Iniciar Sesión</button>
+            </form>
+            
+            <div class="register-link">
+                {# Texto de Registrarme Ahora #}
+                
+            </div>
+        </div>
+        
+        <div class="login-footer-right">
+            {# Textos de Términos y Contacto #}
+            <a href="#" class="terms-link">Términos y Servicios</a>
+            <p>¿Necesitas ayuda? <a href="mailto:soporte@tuintitucion.com">Contáctanos</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

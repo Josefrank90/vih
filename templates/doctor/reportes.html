@@ -1,0 +1,440 @@
+{% extends "base.html" %}
+
+{% block title %}Reportes Analíticos{% endblock %}
+
+{% block content %}
+<style>
+    /* Estilos generales y variables para este reporte */
+    :root {
+        --color-primario: #D32F2F; /* Rojo principal de la app */
+        --color-secundario: #F98F1D; /* Naranja/Amarillo para énfasis */
+        --color-fondo-claro: #ECF0F1; 
+        --color-tarjeta-fondo: #FFFFFF;
+        --color-texto-oscuro: #2C3E50;
+        --color-texto-claro: #7F8C8D;
+        --color-exito: #2ECC71; /* Verde */
+        --color-alerta: #E74C3C; /* Rojo */
+        --color-info: #3498DB; /* Azul para info/descarga */
+    }
+
+    /* Contenedor y Títulos */
+    .reportes-content {
+        padding: 30px;
+        background-color: var(--color-fondo-claro);
+    }
+
+    /* Contenedor para alinear el título y el botón de descarga */
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 10px;
+    }
+    
+    h1 {
+        color: var(--color-texto-oscuro);
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin: 0; 
+    }
+
+    .description-text {
+        color: var(--color-texto-claro);
+        font-size: 1.1rem;
+        margin-bottom: 30px;
+    }
+
+    /* Estilo para el botón de Descarga */
+    .download-link {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 20px;
+        background-color: var(--color-info); /* Azul para descarga */
+        color: var(--color-tarjeta-fondo);
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: background-color 0.3s ease;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .download-link:hover {
+        background-color: #2980B9; /* Un azul más oscuro para el hover */
+        color: white; /* Mantener texto blanco */
+    }
+    .download-link i {
+        margin-right: 8px;
+    }
+
+
+    /* Cuadrícula principal de las métricas/gráficas */
+    .report-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+        gap: 25px;
+        margin-top: 30px;
+    }
+
+    /* Estilo general para Cajas de Métrica y Gráficas */
+    .chart-box, .metric-box {
+        background: var(--color-tarjeta-fondo);
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        border-left: 5px solid var(--color-primario);
+        transition: transform 0.2s ease-in-out;
+    }
+
+    /* Estilos del encabezado de la gráfica de Edad */
+    .chart-box h3 {
+        color: var(--color-texto-oscuro);
+        font-size: 1.4rem;
+        margin-bottom: 15px;
+        border-bottom: 1px solid var(--color-fondo-claro);
+        padding-bottom: 10px;
+        
+        /* Alineación del filtro y título */
+        display: flex; 
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Contenedor del canvas para asegurar el tamaño de la gráfica */
+    .chart-container {
+        height: 300px;
+        position: relative;
+        margin-top: 15px;
+        padding-top: 15px;
+    }
+
+    /* Estilo para los bloques de Positividad/Negatividad */
+    .tasa-positividad, .tasa-negativa {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-top: 15px;
+        padding: 10px 0;
+    }
+    .tasa-positividad {
+        color: var(--color-alerta); /* Rojo para positividad, siguiendo el tema de la app */
+    }
+    .tasa-negativa {
+        color: var(--color-exito); /* Verde para negatividad, que es el "buen" resultado */
+    }
+
+    /* Estilos del selector de filtro */
+    .age-filter-select {
+        padding: 4px 8px;
+        border-radius: 5px;
+        border: 1px solid var(--color-border-light, #ccc);
+        font-size: 0.9rem;
+    }
+
+
+    /* Media Queries para responsividad */
+    @media (max-width: 768px) {
+        .reportes-content {
+            padding: 15px;
+        }
+        .header-container {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .download-link {
+            width: 100%;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        .report-grid {
+            grid-template-columns: 1fr;
+        }
+        .metric-value {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+
+<div class="reportes-content">
+    
+    <div class="header-container">
+        <h1>
+            <i class="fas fa-chart-bar"></i> Panel de Reportes Analíticos
+        </h1>
+        
+        <a href="{{ url_for('doctor_bp.descargar_reporte_pdf') }}" class="download-link">
+            <i class="fas fa-file-pdf"></i> Descargar Reporte PDF
+        </a>
+    </div>
+
+    <p class="description-text">
+        Análisis de datos clave de las campañas de autoprueba
+    </p>
+
+    <div class="report-grid">
+        <div class="metric-box">
+            <h3><i class="fas fa-qrcode"></i> Códigos Generados</h3>
+            <p class="metric-value">{{ metricas.codigos_generados if metricas and metricas.codigos_generados is not none else 'N/A' }}</p>
+            <p class="metric-label">Total de códigos QR emitidos.</p>
+        </div>
+
+        <div class="metric-box">
+            <h3><i class="fas fa-link"></i> Códigos Vinculados</h3>
+            <p class="metric-value">{{ metricas.codigos_vinculados if metricas and metricas.codigos_vinculados is not none else 'N/A' }}</p>
+            <p class="metric-label">Códigos asociados a un paciente.</p>
+        </div>
+
+        <div class="metric-box">
+            <h3><i class="fas fa-check-circle"></i> Evaluaciones Finalizadas</h3>
+            <p class="metric-value">{{ metricas.total_evaluaciones if metricas and metricas.total_evaluaciones is not none else 'N/A' }}</p>
+            <p class="metric-label">Total de pruebas completadas.</p>
+        </div>
+    </div>
+    
+    <div class="report-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); margin-top: 40px;">
+        
+        <div class="metric-box">
+            <h3><i class="fas fa-viruses"></i> Tasa de Positividad</h3>
+            <p class="tasa-positividad">{{ "{:.1f}%".format(metricas.tasa_positividad) if metricas and metricas.tasa_positividad is not none else 'N/A' }}</p>
+            <p class="total-evaluaciones">Basado en **{{ metricas.total_evaluaciones if metricas and metricas.total_evaluaciones is not none else '0' }}** evaluaciones.</p>
+            <p class="metric-label" style="margin-top: 15px; color: var(--color-alerta);">Casos Positivos: **{{ metricas.casos_positivos if metricas and metricas.casos_positivos is not none else '0' }}**</p>
+        </div>
+
+        <div class="metric-box">
+            <h3><i class="fas fa-shield-alt"></i> Tasa de Negatividad</h3>
+            <p class="tasa-negativa">{{ "{:.1f}%".format(metricas.tasa_negativa) if metricas and metricas.tasa_negativa is not none else 'N/A' }}</p>
+            <p class="total-evaluaciones">Pruebas **Negativas:** **{{ metricas.casos_negativos if metricas and metricas.casos_negativos is not none else '0' }}**</p>
+            <p class="metric-label" style="margin-top: 15px;">**Nota:** Una alta tasa negativa es un buen indicador de salud poblacional.</p>
+        </div>
+    </div>
+
+    <div class="chart-box" style="margin-top: 40px; border-left: 5px solid var(--color-secundario);">
+        <h3><i class="fas fa-venus-mars"></i> Distribución de Pacientes (Sexo)</h3>
+        <div class="chart-container">
+            <p id="noDataSexo" style="text-align: center; color: var(--color-texto-claro); font-style: italic; display: none; padding-top: 100px;">
+                Sin datos suficientes para mostrar la distribución por sexo.
+            </p>
+            <canvas id="sexoChart"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-box" style="margin-top: 25px; border-left: 5px solid var(--color-secundario);">
+        
+        <h3 class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-chart-pie"></i> Distribución de Pacientes (Edad)
+            </div>
+            
+            <form id="ageFilterForm" method="GET" action="{{ url_for('doctor_bp.reportes') }}" style="margin: 0;">
+                <div class="age-filter-container">
+                    <label for="rangoEdadFilter" style="margin: 0;">Filtrar:</label>
+                    <select id="rangoEdadFilter" name="rango_edad" class="age-filter-select" onchange="document.getElementById('ageFilterForm').submit()">
+                        <option value="">Mostrar Todos</option>
+                        
+                        {# Iterar sobre los rangos que devuelve Flask para mostrarlos #}
+                        {% for rango, total in metricas.distribucion_edad.items() %}
+                            <option value="{{ rango }}" {% if request.args.get('rango_edad') == rango %}selected{% endif %}>
+                                {{ rango }} ({{ total }} casos)
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </h3>
+
+        <div class="chart-container">
+               <p id="noDataEdad" style="text-align: center; color: var(--color-texto-claro); font-style: italic; display: none; padding-top: 100px;">
+                Sin datos suficientes para mostrar la distribución por edad.
+            </p>
+               <canvas id="edadChart"></canvas>
+        </div>
+    </div>
+    
+    <a href="{{ url_for('doctor_bp.dashboard') }}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Volver al Panel de Control
+    </a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script> 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    let metricasData;
+    try {
+        // PARSEO ROBUSTO DEL JSON INYECTADO DESDE FLASK
+        metricasData = JSON.parse('{{ metricas_json | safe }}');
+    } catch (e) {
+        // Si hay un error de parseo (e.g., el JSON es nulo o inválido), lo registramos.
+        console.error("Error al parsear metricas_json. JSON devuelto:", '{{ metricas_json | safe }}', e);
+        metricasData = {};
+    }
+
+    // --- Lógica de preselección del filtro desde la URL ---
+    // Esto asegura que si la página se recarga con un filtro, el select lo refleje.
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedRange = urlParams.get('rango_edad');
+    if (selectedRange) {
+        const selectElement = document.getElementById('rangoEdadFilter');
+        if (selectElement) {
+            // Asegura que la opción correcta se muestre como seleccionada
+            selectElement.value = selectedRange;
+        }
+    }
+
+
+    // --- GRÁFICA DE DISTRIBUCIÓN POR SEXO (Doughnut) ---
+    const sexoChartElement = document.getElementById('sexoChart');
+    const noDataSexoElement = document.getElementById('noDataSexo');
+    
+    if (sexoChartElement && metricasData && metricasData.distribucion_sexo) {
+        
+        const sexoLabels = ['Hombres', 'Mujeres', 'Otro'];
+        
+        const sexoData = [
+            metricasData.distribucion_sexo.H || 0,
+            metricasData.distribucion_sexo.M || 0,
+            metricasData.distribucion_sexo.O || 0 
+        ];
+
+        const totalSexo = sexoData.reduce((a, b) => a + b, 0);
+
+        if (totalSexo === 0) {
+            sexoChartElement.style.display = 'none'; // Oculta el canvas
+            if (noDataSexoElement) noDataSexoElement.style.display = 'block'; // Muestra el mensaje
+        } else {
+            sexoChartElement.style.display = 'block'; // Muestra el canvas
+            if (noDataSexoElement) noDataSexoElement.style.display = 'none'; // Oculta el mensaje
+
+            const ctxSexo = sexoChartElement.getContext('2d');
+            new Chart(ctxSexo, {
+                type: 'doughnut',
+                data: {
+                    labels: sexoLabels,
+                    datasets: [{
+                        label: 'Pacientes por Sexo',
+                        data: sexoData,
+                        backgroundColor: [
+                            'rgba(44, 62, 80, 0.8)',
+                            'rgba(211, 47, 47, 0.8)',
+                            'rgba(249, 143, 29, 0.8)'
+                        ],
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: 'var(--color-texto-oscuro)', 
+                                font: { size: 14 }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    const currentValue = context.raw;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = total > 0 ? ((currentValue / total) * 100).toFixed(1) : 0;
+                                    label += currentValue + ' (' + percentage + '%)';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    // --- GRÁFICA DE DISTRIBUCIÓN POR EDAD (BARRAS) ---
+    const edadChartElement = document.getElementById('edadChart');
+    const noDataEdadElement = document.getElementById('noDataEdad');
+
+    if (edadChartElement && metricasData && metricasData.distribucion_edad) {
+        
+        let labelsToDisplay = Object.keys(metricasData.distribucion_edad);
+        let dataToDisplay = Object.values(metricasData.distribucion_edad);
+        
+        // 🚨 Lógica para filtrar los datos si se seleccionó un rango
+        if (selectedRange && selectedRange !== "") {
+             // Solo mostramos el rango seleccionado
+             const totalCases = metricasData.distribucion_edad[selectedRange] || 0;
+             
+             // Si el caso seleccionado no tiene datos, mostramos una barra de 0.
+             labelsToDisplay = [selectedRange];
+             dataToDisplay = [totalCases];
+        }
+
+        const totalEdad = dataToDisplay.reduce((a, b) => a + b, 0);
+
+        // Lógica de control de visibilidad: si no hay datos, muestra el mensaje de diagnóstico.
+        if (totalEdad === 0 && !selectedRange) { // Si el total es 0 Y no hay filtro activo
+            edadChartElement.style.display = 'none'; // Oculta el canvas
+            if (noDataEdadElement) noDataEdadElement.style.display = 'block'; // Muestra el mensaje
+        } else {
+            edadChartElement.style.display = 'block'; // Muestra el canvas
+            if (noDataEdadElement) noDataEdadElement.style.display = 'none'; // Oculta el mensaje
+        
+            const ctxEdad = edadChartElement.getContext('2d');
+            new Chart(ctxEdad, {
+                type: 'bar',
+                data: {
+                    labels: labelsToDisplay,
+                    datasets: [{
+                        label: 'Pacientes por Rango de Edad',
+                        data: dataToDisplay,
+                        backgroundColor: 'rgba(211, 47, 47, 0.6)',
+                        borderColor: 'var(--color-primario)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                 label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed.y + ' casos';
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: 'var(--color-texto-claro)',
+                                callback: function(value) { if (value % 1 === 0) { return value; } }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'var(--color-texto-claro)'
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    }
+});
+</script>
+{% endblock content %}

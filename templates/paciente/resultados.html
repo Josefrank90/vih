@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado y Recomendaciones</title>
+    
+    {# Asumo que tienes un base.html o CSS básico para dar estilo #}
+    {# Si estás usando un base_simple.html que hereda de base.html, úsalo aquí #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Estilos específicos para la página de resultados */
+        .resultado-card {
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .resultado-display {
+            font-size: 3rem;
+            font-weight: 700;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            color: white;
+        }
+        .positivo .resultado-display {
+            background-color: #D32F2F; /* Rojo */
+        }
+        .negativo .resultado-display {
+            background-color: #388E3C; /* Verde */
+        }
+        .alert-recomendacion {
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .positivo .alert-recomendacion {
+            border: 2px solid #D32F2F;
+            background-color: #F8D7DA; /* Rosa claro */
+            color: #721C24;
+        }
+        .negativo .alert-recomendacion {
+            border: 2px solid #388E3C;
+            background-color: #D4EDDA; /* Verde claro */
+            color: #155724;
+        }
+        .btn-finalizar {
+            background-color: #6C757D;
+            border-color: #6C757D;
+        }
+        .btn-finalizar:hover {
+            background-color: #5A6268;
+            border-color: #5A6268;
+        }
+    </style>
+</head>
+<body>
+    {# Puedes usar un contenedor central si no usas herencia de plantilla #}
+    <div class="container d-flex justify-content-center align-items-center min-vh-100">
+        <div class="col-md-8 col-lg-6">
+            <div class="card resultado-card text-center {{ clase_resultado }}">
+                
+                <h1 class="mb-4">Resultado de la Autoprueba VIH</h1>
+
+                <div class="resultado-display">
+                    {{ resultado }}
+                </div>
+                
+                <h3 class="mt-4 mb-3">Recomendaciones:</h3>
+
+                <div class="alert-recomendacion text-start">
+                    <p>{{ recomendacion }}</p>
+                    
+                    {% if resultado == 'Positivo' %}
+                        <p class="fw-bold mt-3">🔴 Importante: Este resultado debe ser confirmado por un profesional de la salud.</p>
+                    {% else %}
+                        <p class="fw-bold mt-3">✅ ¡Excelente! Mantén tus prácticas de prevención.</p>
+                    {% endif %}
+                </div>
+                
+                <hr class="mt-5 mb-3">
+
+                {# Este botón usa JavaScript para cerrar la ventana, ya que la sesión se limpió en paciente.py #}
+                <button onclick="window.close();" class="btn btn-finalizar w-100 py-2">
+                    <i class="fas fa-sign-out-alt"></i> Finalizar Proceso y Cerrar Ventana
+                </button>
+                
+            </div>
+        </div>
+    </div>
+    
+    {# Si estás usando herencia, reemplazarías todo el código anterior con algo como esto: #}
+    {#
+        {% extends "base_simple.html" %} 
+        {% block content %}
+        ... Contenido de la tarjeta arriba ...
+        {% endblock %}
+    #}
+</body>
+</html>

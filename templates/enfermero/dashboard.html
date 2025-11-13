@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Enfermero{% endblock %}
+
+{# ================================================================= #}
+{# NUEVO BLOQUE: Definición del contenido del Sidebar Superior        #}
+{# ================================================================= #}
+{% block top_header_content %}
+    <h3 class="top-header-title">Panel del Enfermero</h3>
+    <p class="top-header-subtitle">Bienvenido, {{ session.get('username', 'Enfermero') }}. Administre y vincule pacientes.</p>
+{% endblock %}
+{# ================================================================= #}
+
+{% block content %}
+{# NOTA: El <h1> antiguo se ha eliminado, ya que el título ahora va en la barra superior. #}
+
+<div class="card-grid">
+    <div class="card">
+        <div class="card-title">QRs Pendientes</div>
+        <div class="card-value">{{ qrs_pendientes }}</div>
+        <div class="card-description">Códigos QR sin vincular a un paciente.</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Pacientes Registrados</div>
+        <div class="card-value">{{ pacientes_registrados }}</div> 
+        <div class="card-description">Total de pacientes registrados.</div>
+    </div>
+    <div class="card">
+        <div class="card-title">Nuevos Registros</div>
+        <div class="card-value">{{ nuevos_registros }}</div> 
+        <div class="card-description">Registros vinculados en las últimas 24 horas.</div>
+    </div>
+</div>
+
+<div class="data-table-container">
+    <h3>Códigos QR Pendientes de Vincular</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Código QR</th>
+                <th>Fecha de Creación</th> 
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if qrs_pendientes_tabla %}
+                {% for qr in qrs_pendientes_tabla %}
+                <tr>
+                    <td>{{ qr.id }}</td>
+                    <td>{{ qr.codigo_qr }}</td> 
+                    
+                    {# Muestra la fecha_creacion y aplica un filtro de formato si es necesario, si no, usa N/A #}
+                    <td>{{ qr.fecha_creacion | default('N/A', true) }}</td>
+                    
+                    <td>
+                        {# CLAVE: Enlace correcto usando el codigo_qr para ir a la vista de vinculación #}
+                        <a href="{{ url_for('enfermero_bp.vincular_con_codigo', codigo=qr.codigo_qr) }}" class="btn btn-primary btn-small"><i class="fas fa-user-plus"></i> Vincular</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td colspan="4">No hay QRs pendientes de vincular.</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

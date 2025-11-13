@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Códigos QR Pendientes de Vinculación{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <style>
+        /* Estilos para las tarjetas de QR listadas */
+        .qr-list-grid {
+            display: grid;
+            /* Usa auto-fit para que se adapten al espacio, mínimo 250px */
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .qr-card {
+            background: #ffffff;
+            border-left: 5px solid #D32F2F; /* Borde rojo para destacar */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.07);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .qr-card:hover {
+            /* Efecto de elevación al pasar el ratón */
+            transform: translateY(-3px);
+        }
+        .qr-card img {
+            width: 150px;
+            height: 150px;
+            margin: 10px auto;
+            border: 2px solid #ECF0F1;
+            border-radius: 4px;
+        }
+        .qr-code-text {
+            font-weight: 600;
+            color: #2C3E50;
+            margin-bottom: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <h2 class="mb-4">
+                <i class="fas fa-qrcode"></i> Códigos QR Pendientes de Vinculación
+            </h2>
+            <p class="text-muted mb-4">
+                **Instrucción:** Con el teléfono o tablet que usará para el registro, **escanee directamente la imagen QR** que aparece en la lista para iniciar el formulario de vinculación del paciente.
+            </p>
+            
+            <hr>
+            
+            <h4>QRs Pendientes:</h4>
+
+            <div class="qr-list-grid">
+                {# VERIFICACIÓN DE QRs PENDIENTES #}
+                {% if qrs_pendientes %}
+                    {% for qr in qrs_pendientes %}
+                    <div class="qr-card">
+                        <p class="qr-code-text">Código: {{ qr.codigo }}</p>
+                        
+                        {# IMAGEN QR EN BASE64 - Esta es la imagen que deben escanear #}
+                        <img src="{{ qr.imagen_base64 }}" alt="Código QR para {{ qr.codigo }}">
+
+                        <small class="text-success mt-2">escanear y vincular.</small>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    {# Mensaje si no hay QR pendientes #}
+                    <div class="col-12 text-center p-5 border rounded bg-light">
+                        <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                        <p class="lead">No hay códigos QR pendientes de vinculación en este momento.</p>
+                        <p>Pida al Doctor generar un nuevo código para continuar.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <a href="{{ url_for('enfermero_bp.dashboard') }}" class="btn btn-secondary mt-5">
+                <i class="fas fa-arrow-left"></i> Volver al Panel
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock content %}

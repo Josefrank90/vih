@@ -1,0 +1,35 @@
+{# templates/paciente/cuestionario.html #}
+
+{% extends 'base_paciente.html' %} 
+
+{% block title %}Cuestionario{% endblock %}
+
+{% block patient_content %}
+    <h2>Paso 2: Cuestionario de Riesgo</h2>
+    <p>Responda SÍ o NO a las siguientes preguntas:</p>
+    
+    {# CRÍTICO: El action apunta a la ruta que GUARDA y AVANZA #}
+    <form method="POST" action="{{ url_for('paciente_bp.guardar_cuestionario') }}">
+        
+        {# Se asume que la variable 'preguntas' es una lista de diccionarios con 'texto' e 'id' #}
+        {% for pregunta in preguntas %}
+            <div style="text-align: left; margin-bottom: 25px;">
+                <label style="display: block; font-weight: bold; margin-bottom: 10px;">
+                    {{ loop.index }}. {{ pregunta.texto }}
+                </label>
+                
+                {# Los name CRÍTICOS deben ser únicos y seguir el patrón 'q_ID' #}
+                <div style="display: flex; gap: 20px;">
+                    <label>
+                        <input type="radio" name="q_{{ pregunta.id }}" value="Si" required> SÍ
+                    </label>
+                    <label>
+                        <input type="radio" name="q_{{ pregunta.id }}" value="No"> NO
+                    </label>
+                </div>
+            </div>
+        {% endfor %}
+        
+        <button type="submit" class="btn btn-primary btn-lg">Continuar a Datos Personales</button>
+    </form>
+{% endblock %}

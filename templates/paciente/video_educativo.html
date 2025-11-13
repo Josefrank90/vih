@@ -1,0 +1,28 @@
+{# templates/paciente/video_educativo.html #}
+
+{% extends 'base_paciente.html' %} 
+{# CRÍTICO: La línea {% extends 'base_simple.html' %} ha sido eliminada. #}
+
+{% block title %}Video Informativo{% endblock %}
+
+{% block patient_content %}
+    <h2>Paso 2: Video de Retroalimentación</h2>
+    <p>Por favor, ve el siguiente video completo antes de continuar.</p>
+    
+    {# 
+        CRÍTICO: Asegúrate de reemplazar la URL con tu video real. 
+        (Dejé el Rickroll de ejemplo por ahora 😉)
+    #}
+    <div style="margin: 20px 0;">
+        <iframe width="100%" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ?controls=0" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    
+    <hr>
+
+    {# CRÍTICO: El formulario llama correctamente a la función de avance #}
+    <form action="{{ url_for('paciente_bp.siguiente_paso') }}" method="GET" style="margin-top: 20px;">
+        <button type="submit" class="btn btn-success btn-lg">
+            He visto el video, Continuar al Cuestionario
+        </button>
+    </form>
+{% endblock %}

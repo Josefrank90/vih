@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    
+    {# Enlace al CSS estático: Clave para el estilo #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    {# ================================================================ #}
+    {# SOLUCIÓN CRÍTICA: INCLUSIÓN DE CHART.JS PARA LAS GRÁFICAS #}
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    {# ================================================================ #}
+
+    {# ESTILOS INTERNOS PARA EL LAYOUT Y EL TOP SIDEBAR #}
+    <style>
+        /* Asumiendo que tu sidebar tiene 260px de ancho */
+        .dashboard-layout {
+            display: flex; 
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 260px; /* Ancho fijo de tu menú lateral */
+            position: fixed; 
+            top: 0;
+            left: 0;
+            height: 100%;
+            z-index: 1000;
+            /* ... (El resto de tus estilos de sidebar) ... */
+        }
+
+        .dashboard-content {
+            /* CLAVE: Empieza después del sidebar y ocupa el ancho restante */
+            margin-left: 260px; 
+            width: calc(100% - 260px); 
+            flex-grow: 1; 
+            padding: 0; /* Asegura que no haya espacios de separación en los bordes */
+        }
+        
+        /* ESTILOS DE LA BARRA SUPERIOR - ¡MODIFICADOS AQUÍ! */
+        .top-sidebar-header {
+            /* Usando el color rojo/borgoña de tu menú lateral */
+            background-color: #883a35; 
+            color: white;
+            padding: 10px 30px; /* Menos padding vertical para que los logos se vean mejor */
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 100%; 
+            box-sizing: border-box; 
+            
+            /* PROPIEDADES DE FLEXBOX PARA ALINEAR TÍTULO Y LOGOS */
+            display: flex; 
+            justify-content: space-between; /* Empuja el contenido a los extremos */
+            align-items: center; /* Centra verticalmente todos los elementos */
+        }
+        
+        /* Nuevo contenedor para los títulos */
+        .top-header-text-container {
+            /* Asegura que los títulos no ocupen espacio adicional */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-header-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .top-header-subtitle {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        /* Nuevo contenedor para los logos */
+        .top-header-logos {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Estilo para los logos */
+        .header-logo {
+            height: 60px; /* Define un tamaño para los logos */
+            margin-left: 60px; /* Espacio entre los logos y el texto del encabezado */
+        }
+        
+        .page-content-wrapper {
+            /* Agrega el padding interno aquí, para que el contenido no toque los bordes del main */
+            padding: 30px; 
+        }
+    </style>
+    {% block head %}{% endblock %}
+    {# ================================================================ #}
+</head>
+<body>
+    
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="profile-pic"><i class="fas fa-user-circle"></i></div>
+                <h2>{{ session.get('username', 'Usuario') }}</h2> 
+                {# Usa la función Python para el rol #}
+                <p>{{ "Doctor" if session.get('role') == 1 else "Enfermero" if session.get('role') == 2 else "Invitado" }}</p>
+                <p>ID: {{ session.get('user_id') }}</p>
+            </div>
+            <nav class="sidebar-nav">
+                <ul>
+                    {# -------------------- RUTAS DOCTOR (ROLE 1) -------------------- #}
+                    {% if session.get('role') == 1 %}
+                        <li>
+                            <a href="{{ url_for('doctor_bp.dashboard') }}" 
+                                class="{% if request.endpoint == 'doctor_bp.dashboard' %}active{% endif %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('doctor_bp.generar_qr') }}" 
+                                class="{% if 'doctor_bp.generar_qr' in request.endpoint %}active{% endif %}">
+                                <i class="fas fa-qrcode"></i> Generar QR
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url_for('doctor_bp.reportes') }}" 
+                                class="{% if 'doctor_bp.reportes' in request.endpoint %}active{% endif %}">
+                                <i class="fas fa-chart-bar"></i> Reportes
+                            </a>
+                        </li> 
+                        
+                    {# -------------------- RUTAS ENFERMERO (ROLE 2) -------------------- #}
+                    {% elif session.get('role') == 2 %}
+                        <li>
+                            <a href="{{ url_for('enfermero_bp.dashboard') }}" 
+                                class="{% if request.endpoint == 'enfermero_bp.dashboard' %}active{% endif %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a>
+                        </li>
+                        
+                        {# CORRECCIÓN CLAVE: Apunta a vincular_inicio, ya que escanear_qr fue eliminado #}
+                        <li>
+                            <a href="{{ url_for('enfermero_bp.vincular_inicio') }}" 
+                                class="{% if 'enfermero_bp.vincular_inicio' in request.endpoint or 'enfermero_bp.vincular_con_codigo' in request.endpoint %}active{% endif %}">
+                                <i class="fas fa-user-plus"></i> Vincular Paciente
+                            </a>
+                        </li>
+                        
+                        {# Enlace funcional para 'Pacientes' #}
+                        <li>
+                            <a href="{{ url_for('enfermero_bp.pacientes') }}" 
+                                class="{% if 'enfermero_bp.pacientes' in request.endpoint %}active{% endif %}">
+                                <i class="fas fa-list-alt"></i> Pacientes
+                            </a>
+                        </li>
+                        
+                    {% endif %}
+                    
+                    {# -------------------- RUTA DE SALIDA (Para todos) -------------------- #}
+                    <li>
+                        <a href="{{ url_for('auth_bp.logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="dashboard-content">
+            
+            {# ============================================================================== #}
+            {# BARRA SUPERIOR (TOP SIDEBAR) CON LOS LOGOS AGREGADOS #}
+            <div class="top-sidebar-header">
+                
+                {# CONTENEDOR DE TEXTO (A LA IZQUIERDA) #}
+                <div class="top-header-text-container">
+                    {% block top_header_content %}
+                        <h3 class="top-header-title">Panel de Control</h3>
+                        <p class="top-header-subtitle">Bienvenido, {{ session.get('username', 'Usuario') }}.</p>
+                    {% endblock %}
+                </div>
+                
+                {# CONTENEDOR DE LOGOS (A LA DERECHA) #}
+                <div class="top-header-logos">
+                    {# IMPORTANTE: Usamos la ruta estática correcta: 'assets/img/' #}
+                    
+                    {# Logo de Jurisdicción #}
+                    <img src="{{ url_for('static', filename='assets/img/logo_jurisdiccion.png') }}" 
+                         alt="Logo Jurisdicción" 
+                         class="header-logo">
+
+                    {# Logo de Salud #}
+                    <img src="{{ url_for('static', filename='assets/img/logo_salud.png') }}" 
+                         alt="Logo Salud" 
+                         class="header-logo">
+                </div>
+            </div>
+            {# ============================================================================== #}
+
+            {# Mensajes Flash: Estarán visibles si el CSS de .flashes funciona #}
+            <div class="page-content-wrapper">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        <ul class="flashes">
+                        {% for category, message in messages %}
+                            <li class="alert alert-{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    {% endif %}
+                {% endwith %}
+                
+                {# Contenido de la página específica se inyecta aquí #}
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    
+</body>
+</html>
