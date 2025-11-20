@@ -1,325 +1,345 @@
 {% extends "base.html" %}
 
-
-
 {% block title %}Generar Nuevo QR{% endblock %}
 
-
-
 {% block head %}
+{{ super() }}
+<style>
+    /*
+    * Variables de color (tomadas de tu style.css)
+    */
+    :root {
+        --color-primary-red: #D32F2F;
+        --color-secondary-emphasis: #F98F1D;
+        --color-card-bg: #FFFFFF;
+        --color-shadow-light: rgba(0, 0, 0, 0.08);
+        --color-text-dark: #2C3E50;
+        --color-text-faded: #7F8C8D;
+        --color-border-light: #DCE1E7;
+        --color-primary-red-dark: #A52A2A;
+        --color-white: #FFFFFF;
+        --color-disabled-bg: #EAECEE;
+    }
 
-    {{ super() }}
+    /* --- Estilo de la Tarjeta Contenedora --- */
+    .form-container.card {
+        max-width: 100%;
+        padding: 40px;
+        margin-bottom: 30px;
+        background-color: var(--color-card-bg);
+        border-radius: 8px;
+        box-shadow: 0 4px 12px var(--color-shadow-light);
+        border-left: 5px solid var(--color-secondary-emphasis);
+    }
 
-    <style>
+    /* --- Estilo de Cuadrícula (Dos Columnas) --- */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px 25px;
+        margin-bottom: 30px;
+    }
 
-        /*
+    /* --- Estilos para los campos de formulario dentro del contenedor --- */
+    .form-container label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: var(--color-text-dark);
+        text-align: left;
+        font-size: 1.05em;
+    }
 
-        * Variables de color (tomadas de tu style.css)
+    .form-container input,
+    .form-container select,
+    .form-container textarea {
+        width: 100%;
+        padding: 12px 15px;
+        margin-bottom: 0;
+        border: 1px solid var(--color-border-light);
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--color-text-dark);
+        background-color: var(--color-card-bg);
+        transition: border-color 0.3s, box-shadow 0.3s;
+        box-sizing: border-box;
+    }
 
-        */
+    /* Estilo para los selectores/inputs deshabilitados */
+    .form-container select:disabled,
+    .form-container input:disabled {
+        background-color: var(--color-disabled-bg);
+        cursor: not-allowed;
+        color: var(--color-text-faded);
+    }
 
-        :root {
+    .form-container input:focus,
+    .form-container select:focus,
+    .form-container textarea:focus {
+        border-color: var(--color-primary-red);
+        box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2);
+        outline: none;
+    }
 
-            --color-primary-red: #D32F2F;
+    /* --- Botón --- */
+    .btn-primary.btn-full-width {
+        width: 100%;
+        margin-top: 15px;
+        padding: 15px;
+        background-color: var(--color-primary-red);
+        color: var(--color-white);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 600;
+        transition: background-color 0.3s;
+        text-transform: uppercase;
+    }
 
-            --color-secondary-emphasis: #F98F1D;
+    .btn-primary.btn-full-width:hover {
+        background-color: var(--color-primary-red-dark);
+    }
 
-            --color-card-bg: #FFFFFF;
+    .description-text {
+        margin-bottom: 25px;
+        line-height: 1.6;
+        color: var(--color-text-faded);
+    }
 
-            --color-shadow-light: rgba(0, 0, 0, 0.08);
+    /* Estilo para el enlace de "Volver" */
+    .back-link {
+        display: block;
+        margin-top: 30px;
+        text-align: center;
+        color: var(--color-text-faded);
+        text-decoration: none;
+        transition: color 0.3s;
+    }
 
-            --color-text-dark: #2C3E50;
+    .back-link:hover {
+        color: var(--color-primary-red);
+    }
 
-            --color-text-faded: #7F8C8D;
-
-            --color-border-light: #DCE1E7;
-
-            --color-primary-red-dark: #A52A2A;
-
-            --color-white: #FFFFFF;
-
+    /* --- Media Query para volver a 1 columna en móviles --- */
+    @media (max-width: 768px) {
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
-
-
-
-        /* --- Estilo de la Tarjeta Contenedora --- */
 
         .form-container.card {
-
-            max-width: 100%;
-
-            padding: 40px;
-
-            margin-bottom: 30px;
-
-            background-color: var(--color-card-bg);
-
-            border-radius: 8px;
-
-            box-shadow: 0 4px 12px var(--color-shadow-light);
-
-            border-left: 5px solid var(--color-secondary-emphasis);
-
+            padding: 20px;
         }
-
-       
-
-        /* --- Estilo de Cuadrícula (Dos Columnas) --- */
-
-        .form-grid {
-
-            display: grid;
-
-            grid-template-columns: 1fr 1fr;
-
-            gap: 30px 25px;
-
-            margin-bottom: 30px;
-
-        }
-
-
-
-        /* --- Estilos para los campos de formulario dentro del contenedor --- */
-
-        .form-container label {
-
-            display: block;
-
-            margin-bottom: 8px;
-
-            font-weight: 600;
-
-            color: var(--color-text-dark);
-
-            text-align: left;
-
-            font-size: 1.05em;
-
-        }
-
-
-
-        .form-container input, .form-container select, .form-container textarea {
-
-            width: 100%;
-
-            padding: 12px 15px;
-
-            margin-bottom: 0;
-
-            border: 1px solid var(--color-border-light);
-
-            border-radius: 8px;
-
-            font-size: 1rem;
-
-            color: var(--color-text-dark);
-
-            background-color: var(--color-card-bg);
-
-            transition: border-color 0.3s, box-shadow 0.3s;
-
-            box-sizing: border-box;
-
-        }
-
-       
-
-        .form-container input:focus, .form-container select:focus, .form-container textarea:focus {
-
-            border-color: var(--color-primary-red);
-
-            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2);
-
-            outline: none;
-
-        }
-
-
-
-        /* --- Botón --- */
-
-        .btn-primary.btn-full-width {
-
-            width: 100%;
-
-            margin-top: 15px;
-
-            padding: 15px;
-
-            background-color: var(--color-primary-red);
-
-            color: var(--color-white);
-
-            border: none;
-
-            border-radius: 8px;
-
-            cursor: pointer;
-
-            font-size: 1rem;
-
-            font-weight: 600;
-
-            transition: background-color 0.3s;
-
-            text-transform: uppercase;
-
-        }
-
-
-
-        .btn-primary.btn-full-width:hover {
-
-            background-color: var(--color-primary-red-dark);
-
-        }
-
-
-
-        .description-text {
-
-            margin-bottom: 25px;
-
-            line-height: 1.6;
-
-            color: var(--color-text-faded);
-
-        }
-
-
-
-        /* --- Media Query para volver a 1 columna en móviles --- */
-
-        @media (max-width: 768px) {
-
-            .form-grid {
-
-                grid-template-columns: 1fr;
-
-                gap: 20px;
-
-            }
-
-            .form-container.card {
-
-                padding: 20px;
-
-            }
-
-        }
-
-    </style>
-
+    }
+</style>
 {% endblock %}
-
-
 
 {# OPCIONAL: Personaliza el encabezado superior del panel #}
-
 {% block top_header_content %}
-
-    <h3 class="top-header-title">Generar Nuevo Código QR</h3>
-
-    <p class="top-header-subtitle">Gestión de campañas de autoprueba.</p>
-
+<h3 class="top-header-title">Generar Nuevo Código QR</h3>
+<p class="top-header-subtitle">Gestión de campañas de autoprueba.</p>
 {% endblock %}
-
-
 
 {% block content %}
 
-
-
 <div class="form-container card">
-
     <p class="description-text">
-
-        Ingrese los detalles de la campaña y la cantidad de códigos QR que desea generar. Los códigos **se registrarán y estarán disponibles para descarga en la tabla del Dashboard**.
-
+        Ingrese los detalles de la campaña y la cantidad de códigos QR que desea generar. Los códigos **se registrarán y
+        estarán disponibles para descarga en la tabla del Dashboard**.
     </p>
-
-
 
     <form method="POST">
 
-       
-
         <div class="form-grid">
 
-           
-
             <div class="grid-item">
-
                 <label for="campaign_number">1. Número de Campaña:</label>
-
                 <input type="text" id="campaign_number" name="campaign_number" required
-
-                       placeholder="Ej: Campaña Invierno 2023" value="{{ data.campaign_number | default('') }}">
-
+                    placeholder="Ej: Campaña Invierno 2023" value="{{ data.campaign_number | default('') }}">
             </div>
-
-           
 
             <div class="grid-item">
-
-                <label for="delivery_location">2. Lugar de Entrega:</label>
-
-                <input type="text" id="delivery_location" name="delivery_location" required
-
-                       placeholder="Ej: Hospital Central, Consulta 3" value="{{ data.delivery_location | default('') }}">
-
+                <label for="delivery_date">2. Fecha de Entrega (Prevista):</label>
+                <input type="date" id="delivery_date" name="delivery_date" required placeholder="AAAA-MM-DD"
+                    value="{{ data.delivery_date | default('2025-11-15') }}">
             </div>
-
-
 
             <div class="grid-item">
-
-                <label for="delivery_date">3. Fecha de Entrega (Prevista):</label>
-
-                <input type="text" id="delivery_date" name="delivery_date" required
-
-                       placeholder="AAAA-MM-DD (Ej: 2025-10-15)"
-
-                       value="{{ data.delivery_date | default('2025-10-15') }}">
-
+                <label for="quantity">3. Cantidad de Códigos QR a Generar:</label>
+                <input type="number" id="quantity" name="quantity" required min="1"
+                    value="{{ data.quantity | default(1) }}">
             </div>
 
-
+            {# --- Campos de Ubicación (Cargados COMPLETAMENTE por Jinja) --- #}
 
             <div class="grid-item">
-
-                <label for="quantity">4. Cantidad de Códigos QR a Generar:</label>
-
-                <input type="number" id="quantity" name="quantity" required
-
-                       min="1" value="{{ data.quantity | default(1) }}">
-
+                <label for="estado">4. Estado:</label>
+                <select id="estado" name="estado" required>
+                    <option value="" disabled selected>Seleccione un Estado</option>
+                    {# Carga de todos los estados #}
+                    {% for estado in estados %}
+                    <option value="{{ estado.id }}">{{ estado.nombre }}</option>
+                    {% endfor %}
+                </select>
             </div>
 
-           
+            <div class="grid-item">
+                <label for="municipio">5. Municipio:</label>
+                <select id="municipio" name="municipio" required>
+                    <option value="" disabled selected>Seleccione un Municipio</option>
+                    {# Carga de todos los municipios (¡NO en cascada!) #}
+                    {% for municipio in municipios %}
+                    <option data-estado="{{municipio.estado}}" value="{{ municipio.id }}">{{ municipio.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid-item">
+                <label for="colonia">6. Colonia:</label>
+                <select id="colonia" name="colonia" required>
+                    <option value="" disabled selected>Seleccione una Colonia</option>
+                    {# Carga de todas las colonias (¡NO en cascada!), incluyendo el CP como atributo #}
+                    {% for colonia in colonias %}
+                    <option data-municipio="{{colonia.municipio}}" value="{{ colonia.id }}"
+                        data-cp="{{ colonia.codigo_postal }}">
+                        {{ colonia.nombre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid-item">
+                <label for="codigo_postal">7. Código Postal:</label>
+                {# Este campo es un input de texto que se auto-rellena y permanece deshabilitado #}
+                <input type="text" id="codigo_postal" name="codigo_postal" disabled
+                    placeholder="Se auto-genera al seleccionar colonia" value="">
+            </div>
 
         </div>
 
-       
-
         <button type="submit" class="btn-primary btn-full-width">
-
             GENERAR QRS
-
         </button>
-
     </form>
 
-
-
     <a href="{{ url_for('doctor_bp.dashboard') }}" class="back-link">
-
         &larr; Volver al Panel de Control
-
     </a>
-
 </div>
 
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const estadoSelect = document.getElementById('estado');
+        const municipioSelect = document.getElementById('municipio');
+        const coloniaSelect = document.getElementById('colonia');
+        const cpInput = document.getElementById('codigo_postal');
+
+        // Almacenar todas las opciones originales, incluyendo la de 'Seleccione un...'
+        const todosMunicipios = Array.from(municipioSelect.options);
+        const todasColonias = Array.from(coloniaSelect.options);
+        
+        // La primera opción es siempre la de 'Seleccione' (value=""). La guardamos.
+        const defaultMunicipioOption = todosMunicipios.find(opt => opt.value === "");
+        const defaultColoniaOption = todasColonias.find(opt => opt.value === "");
+
+        // ------------------------------------------
+        // 1. Lógica de Filtrado de Municipios (Estado -> Municipio)
+        // ------------------------------------------
+
+        function filtrarMunicipiosPorIdEstado(idEstado) {
+            // Filtra solo los municipios que coinciden con el idEstado
+            // o si el idEstado es vacío (para mostrar nada o la opción por defecto)
+            return todosMunicipios.filter(opcion => 
+                opcion.value === "" || opcion.dataset.estado == idEstado
+            );
+        }
+
+        estadoSelect.addEventListener('change', (e) => {
+            const idEstadoSeleccionado = e.target.value;
+            
+            // 1. Filtrar y actualizar municipios
+            const municipiosFiltrados = filtrarMunicipiosPorIdEstado(idEstadoSeleccionado);
+            
+            // 2. Limpiar y reintroducir la opción por defecto y las filtradas
+            municipioSelect.innerHTML = "";
+            municipiosFiltrados.forEach(opcionMunicipio => {
+                municipioSelect.appendChild(opcionMunicipio.cloneNode(true)); // Usar cloneNode es más seguro
+            });
+            
+            // 3. Forzar limpieza de Colonias y CP
+            coloniaSelect.innerHTML = "";
+            coloniaSelect.appendChild(defaultColoniaOption.cloneNode(true));
+            cpInput.value = "";
+            cpInput.placeholder = "Se auto-genera al seleccionar colonia";
+        });
+
+        // ------------------------------------------
+        // 2. Lógica de Filtrado de Colonias (Municipio -> Colonia)
+        // ------------------------------------------
+
+        function filtrarColoniasPorIdMunicipio(idMunicipio) {
+             // Filtra solo las colonias que coinciden con el idMunicipio
+            return todasColonias.filter(opcion => 
+                opcion.value === "" || opcion.dataset.municipio == idMunicipio
+            );
+        }
+
+        municipioSelect.addEventListener('change', (e) => {
+            const idMunicipioSeleccionado = e.target.value;
+            
+            // 1. Filtrar y actualizar colonias
+            const coloniasFiltradas = filtrarColoniasPorIdMunicipio(idMunicipioSeleccionado);
+
+            // 2. Limpiar y reintroducir la opción por defecto y las filtradas
+            coloniaSelect.innerHTML = "";
+            coloniasFiltradas.forEach(opcionColonia => {
+                coloniaSelect.appendChild(opcionColonia.cloneNode(true)); // Usar cloneNode es más seguro
+            });
+            
+            // 3. Forzar limpieza de CP
+            cpInput.value = "";
+            cpInput.placeholder = "Se auto-genera al seleccionar colonia";
+        });
+        
+        // ------------------------------------------
+        // 3. Auto-relleno de Código Postal
+        // ------------------------------------------
+
+        coloniaSelect.addEventListener('change', (event) => {
+            const selectedOption = event.target.options[event.target.selectedIndex];
+            
+            // Leer el atributo 'data-cp' que adjuntamos con Jinja.
+            const cpValue = selectedOption.value === "" ? '' : selectedOption.getAttribute('data-cp');
+
+            // Asignar el valor del CP al input.
+            cpInput.value = cpValue || '';
+            cpInput.placeholder = cpValue || 'Se auto-genera al seleccionar colonia';
+
+            // Asegura que el campo de CP siempre esté deshabilitado.
+            cpInput.disabled = true;
+        });
+
+        // ------------------------------------------
+        // 4. Inicialización (Restablecer los selects para la carga inicial)
+        // ------------------------------------------
+        
+        // Clonamos las opciones por defecto para evitar que el filtro afecte el original
+        municipioSelect.innerHTML = "";
+        municipioSelect.appendChild(defaultMunicipioOption.cloneNode(true));
+        
+        coloniaSelect.innerHTML = "";
+        coloniaSelect.appendChild(defaultColoniaOption.cloneNode(true));
+        
+        // Asegurar que el input de CP esté deshabilitado al inicio.
+        if (cpInput) {
+            cpInput.disabled = true;
+        }
+    });
+</script>
 {% endblock %}

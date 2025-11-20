@@ -18,67 +18,215 @@
     
 <div class="dashboard-section card p-4 mb-4">
     <h3 class="card-title">Registrar Paciente y Vincular QR</h3>
-   
+    
 
-    <div class="alert alert-info">
-        Código QR a Vincular: <strong>{{ codigo_qr }}</strong>
-    </div>
+    <div class="alert alert-info">
+        Código QR a Vincular: <strong>{{ codigo_qr }}</strong>
+    </div>
 
-    <div class="form-container">
-        <form method="POST" action="{{ url_for('enfermero_bp.vincular_con_codigo', codigo=codigo_qr) }}">
-            
-            <h2>Datos del Paciente</h2>
-            
-                        <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" required 
-                   value="{{ form_data.nombre if form_data else '' }}" 
+    <div class="form-container">
+        <form method="POST" action="{{ url_for('enfermero_bp.vincular_con_codigo', codigo=codigo_qr) }}">
+            
+            <h2>Datos del Paciente</h2>
+            
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required 
+                    value="{{ form_data.nombre if form_data else '' }}" 
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
 
-            <label for="apellido_paterno">Apellido Paterno:</label>
-            <input type="text" id="apellido_paterno" name="apellido_paterno" required
-                   value="{{ form_data.apellido_paterno if form_data else '' }}"
+            <label for="apellido_paterno">Apellido Paterno:</label>
+            <input type="text" id="apellido_paterno" name="apellido_paterno" required
+                    value="{{ form_data.apellido_paterno if form_data else '' }}"
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
 
-            <label for="apellido_materno">Apellido Materno:</label>
-            <input type="text" id="apellido_materno" name="apellido_materno" 
-                   value="{{ form_data.apellido_materno if form_data else '' }}"
+            <label for="apellido_materno">Apellido Materno:</label>
+            <input type="text" id="apellido_materno" name="apellido_materno" 
+                    value="{{ form_data.apellido_materno if form_data else '' }}"
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
 
-            <label for="edad">Edad:</label>
-            <input type="number" id="edad" name="edad" required min="1" max="120"
-                   value="{{ form_data.edad if form_data else '' }}"
+            <label for="edad">Edad:</label>
+            <input type="number" id="edad" name="edad" required min="1" max="120"
+                    value="{{ form_data.edad if form_data else '' }}"
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
 
-            <label for="sexo">Sexo:</label>
-            <select id="sexo" name="sexo" required {% if advertencia_vinculado or error %}disabled{% endif %}>
-                <option value="">Seleccione</option>
-                <option value="Masculino" {% if form_data and form_data.sexo == 'Masculino' %}selected{% endif %}>Masculino</option>
-                <option value="Femenino" {% if form_data and form_data.sexo == 'Femenino' %}selected{% endif %}>Femenino</option>
-                <option value="Otro" {% if form_data and form_data.sexo == 'Otro' %}selected{% endif %}>Otro</option>
-            </select>
-            
-            <label for="telefono">Teléfono:</label>
-            <input type="text" id="telefono" name="telefono" 
-                   value="{{ form_data.telefono if form_data else '' }}"
+            <label for="sexo">Sexo:</label>
+            <select id="sexo" name="sexo" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                <option value="">Seleccione</option>
+                <option value="Masculino" {% if form_data and form_data.sexo == 'Masculino' %}selected{% endif %}>Masculino</option>
+                <option value="Femenino" {% if form_data and form_data.sexo == 'Femenino' %}selected{% endif %}>Femenino</option>
+                <option value="Otro" {% if form_data and form_data.sexo == 'Otro' %}selected{% endif %}>Otro</option>
+            </select>
+            
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" 
+                    value="{{ form_data.telefono if form_data else '' }}"
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
 
-            <label for="ocupacion">Ocupación:</label>
-            <input type="text" id="ocupacion" name="ocupacion" 
-                   value="{{ form_data.ocupacion if form_data else '' }}"
+            <label for="ocupacion">Ocupación:</label>
+            <input type="text" id="ocupacion" name="ocupacion" 
+                    value="{{ form_data.ocupacion if form_data else '' }}"
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
-                    
-            <label for="localidad">Localidad:</label>
-            <input type="text" id="localidad" name="localidad" 
-                   value="{{ form_data.localidad if form_data else '' }}"
-                    {% if advertencia_vinculado or error %}disabled{% endif %}>
+                    
+            {# --- INICIO CAMPOS DE UBICACIÓN --- #}
+            
+            <label for="estado">Estado:</label>
+            <select id="estado" name="estado" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                <option value="">Seleccione un Estado</option>
+                {% for estado in estados %}
+                    <option value="{{ estado.id }}" {% if form_data and form_data.estado == estado.id %}selected{% endif %}>{{ estado.nombre }}</option>
+                {% endfor %}
+            </select>
 
+            <label for="municipio">Municipio:</label>
+            <select id="municipio" name="municipio" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                <option value="">Seleccione un Municipio</option>
+                {% for municipio in municipios %}
+                    <option data-estado="{{municipio.estado}}" value="{{ municipio.id }}" {% if form_data and form_data.municipio == municipio.id %}selected{% endif %}>{{ municipio.nombre }}</option>
+                {% endfor %}
+            </select>
 
-            <button type="submit" class="btn btn-success" 
+            <label for="colonia">Colonia:</label>
+            <select id="colonia" name="colonia" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                <option value="">Seleccione una Colonia</option>
+                {% for colonia in colonias %}
+                    <option data-municipio="{{colonia.municipio}}" value="{{ colonia.id }}" data-cp="{{ colonia.codigo_postal }}" {% if form_data and form_data.colonia == colonia.id %}selected{% endif %}>{{ colonia.nombre }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="codigo_postal">Código Postal:</label>
+            <input type="text" id="codigo_postal" name="codigo_postal" required 
+                   placeholder="Se auto-genera al seleccionar colonia" readonly
+                   value="{{ form_data.codigo_postal if form_data else '' }}"
+                   {% if advertencia_vinculado or error %}disabled{% endif %}>
+            
+            {# --- FIN CAMPOS DE UBICACIÓN --- #}
+
+            <button type="submit" class="btn btn-success" 
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
                 Registrar y Vincular
             </button>
-        </form>
-    </div>
+        </form>
+    </div>
 
 </div>
 {% endblock content %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Obtenemos los elementos del DOM
+        const estadoSelect = document.getElementById('estado');
+        const municipioSelect = document.getElementById('municipio');
+        const coloniaSelect = document.getElementById('colonia');
+        const cpInput = document.getElementById('codigo_postal');
+
+        // Almacenar todas las opciones originales (incluyendo la de "Seleccione...")
+        const todosMunicipios = Array.from(municipioSelect.options);
+        const todasColonias = Array.from(coloniaSelect.options);
+        
+        const defaultMunicipioOption = todosMunicipios.find(opt => opt.value === "");
+        const defaultColoniaOption = todasColonias.find(opt => opt.value === "");
+        
+        // Función para aplicar el filtro y actualizar el select
+        const aplicarFiltro = (selectElement, opcionesFiltradas, defaultOption) => {
+            // Guardar el valor seleccionado previamente para intentar re-seleccionar
+            const currentValue = selectElement.value;
+            
+            selectElement.innerHTML = "";
+            selectElement.appendChild(defaultOption.cloneNode(true));
+
+            let foundMatch = false;
+            opcionesFiltradas.forEach(opcion => {
+                if (opcion.value !== "") {
+                    const clonedOption = opcion.cloneNode(true);
+                    if (clonedOption.value === currentValue) {
+                        clonedOption.selected = true;
+                        foundMatch = true;
+                    }
+                    selectElement.appendChild(clonedOption);
+                }
+            });
+
+            // Si el valor anterior no se encontró, asegurar que la opción por defecto esté seleccionada.
+            if (!foundMatch) {
+                selectElement.value = "";
+            }
+        };
+
+        // Función de inicialización y control de cascada para Municipios
+        const actualizarMunicipios = () => {
+            const idEstadoSeleccionado = estadoSelect.value;
+            
+            const municipiosFiltrados = todosMunicipios.filter(opcion => 
+                opcion.value === "" || opcion.dataset.estado == idEstadoSeleccionado
+            );
+            
+            aplicarFiltro(municipioSelect, municipiosFiltrados, defaultMunicipioOption);
+            actualizarColonias(); // Llama a la siguiente capa
+        };
+
+        // Función de inicialización y control de cascada para Colonias
+        const actualizarColonias = () => {
+            const idMunicipioSeleccionado = municipioSelect.value;
+            
+            const coloniasFiltradas = todasColonias.filter(opcion => 
+                opcion.value === "" || opcion.dataset.municipio == idMunicipioSeleccionado
+            );
+
+            aplicarFiltro(coloniaSelect, coloniasFiltradas, defaultColoniaOption);
+            actualizarCodigoPostal(); // Llama a la capa final
+        };
+        
+        // Función para actualizar el Código Postal
+        const actualizarCodigoPostal = () => {
+            const selectedOption = coloniaSelect.options[coloniaSelect.selectedIndex];
+            
+            // Si no hay opción seleccionada o es la opción por defecto
+            if (!selectedOption || selectedOption.value === "") {
+                cpInput.value = '';
+                cpInput.placeholder = "Se auto-genera al seleccionar colonia";
+                return;
+            }
+
+            // Leer el atributo 'data-cp'
+            const cpValue = selectedOption.getAttribute('data-cp');
+
+            cpInput.value = cpValue || '';
+            cpInput.placeholder = cpValue || 'Se auto-genera al seleccionar colonia';
+        };
+
+        // --- Event Listeners para la Cascada ---
+
+        estadoSelect.addEventListener('change', actualizarMunicipios);
+        municipioSelect.addEventListener('change', actualizarColonias);
+        coloniaSelect.addEventListener('change', actualizarCodigoPostal);
+
+        // --- Inicialización ---
+
+        // Si hay datos previos cargados (form_data), debemos aplicar los filtros:
+        const hasFormData = '{{ form_data | default(false) }}';
+        if (hasFormData) {
+            // Esperamos un ciclo de vida para que los valores de Jinja sean establecidos por el navegador.
+             setTimeout(() => {
+                // Forzamos la actualización de Municipios, lo que a su vez llama a Colonias y CP
+                actualizarMunicipios();
+                
+                // Si el municipio estaba seleccionado previamente, actualizamos las colonias basándonos en ese valor
+                if (municipioSelect.value) {
+                    actualizarColonias();
+                }
+
+                // Aseguramos que el CP se rellene basado en la colonia seleccionada
+                actualizarCodigoPostal();
+             }, 50);
+        } else {
+             // Si no hay datos, inicializamos con los valores por defecto (es decir, sin filtrar)
+             // Esto asegura que la página cargue con todos los municipios y colonias disponibles
+             // antes de que el usuario interactúe.
+             actualizarMunicipios(); 
+             actualizarColonias();
+        }
+        
+    });
+</script>
+{% endblock scripts %}

@@ -5,8 +5,10 @@ from functools import wraps
 import qrcode
 import base64
 from io import BytesIO
+import json
+from decimal import Decimal
 
-IP_DEL_SERVIDOR = '192.168.1.130' 
+IP_DEL_SERVIDOR = '192.168.100.147' 
 PUERTO = '5000'
 BASE_URL = f"http://{IP_DEL_SERVIDOR}:{PUERTO}"
 # ---------------------
@@ -26,7 +28,6 @@ def enfermero_login_required(f):
 
 
 enfermero_bp = Blueprint('enfermero_bp', __name__, url_prefix='/enfermero')
-
 
 
 def generar_qr_base64(data_qr):
@@ -50,6 +51,30 @@ def generar_qr_base64(data_qr):
     except Exception as e:
         current_app.logger.error(f"Error al generar QR Base64 para data '{data_qr}': {e}")
         return None 
+
+# -------------------------------------------------------------------
+# --- FUNCIÓN AUXILIAR PARA CARGAR DATOS DE UBICACIÓN (NUEVA) ---
+# -------------------------------------------------------------------
+def cargar_datos_ubicacion_enfermero():
+    """Consulta y retorna todos los estados, municipios y colonias para el formulario."""
+    try:
+        query_estados = "SELECT id, nombre FROM estados ORDER BY nombre;"
+        estados_data = execute_query(query_estados) or []
+        
+        # Para el filtrado en el frontend, cargamos los datos necesarios:
+        query_municipios = "SELECT id, nombre, estado FROM municipios ORDER BY nombre;"
+        municipios_data = execute_query(query_municipios) or []
+        
+        query_colonias = "SELECT id, nombre, codigo_postal, municipio FROM colonias ORDER BY nombre;"
+        colonias_data = execute_query(query_colonias) or []
+
+    except Exception as e:
+        current_app.logger.error(f"Error al cargar la lista de ubicaciones estáticas (Enfermero): {e}")
+        estados_data = []
+        municipios_data = []
+        colonias_data = []
+    
+    return estados_data, municipios_data, colonias_data
 
 
 # -------------------------------------------------------------------
@@ -131,11 +156,8 @@ def vincular_inicio():
     for qr in qrs_desde_db:
         codigo = qr.get('codigo')
         
-        # 🟢 CORRECCIÓN CLAVE: El QR AHORA APUNTA A LA RUTA DEL PACIENTE
-        # Esta ruta (acceso_qr) actuará como un "dispatcher"
         url_para_qr = url_for('paciente_bp.acceso_qr', qr_codigo=codigo, _external=True) 
         
-        # Generar la imagen Base64
         imagen_base64 = generar_qr_base64(url_para_qr)
         
         if imagen_base64:
@@ -188,11 +210,14 @@ def vincular_con_codigo(codigo):
         
         if advertencia_vinculado or error:
             flash("Error: El código QR no puede ser utilizado para un nuevo registro.", "danger")
+            # Recargar datos de ubicación al fallar la validación inicial
+            estados_data, municipios_data, colonias_data = cargar_datos_ubicacion_enfermero()
             return render_template('enfermero/registrar_paciente.html', codigo_qr=codigo, 
-                                     advertencia_vinculado=advertencia_vinculado, error=error, 
-                                     form_data=request.form)
+                                   advertencia_vinculado=advertencia_vinculado, error=error, 
+                                   form_data=request.form, 
+                                   estados=estados_data, municipios=municipios_data, colonias=colonias_data)
 
-        # --- INICIO LÓGICA DE INSERCIÓN DEL PACIENTE ---
+        # --- INICIO LÓGICA DE CAPTURA DEL PACIENTE ---
         nombre = request.form.get('nombre')
         apellido_paterno = request.form.get('apellido_paterno')
         apellido_materno = request.form.get('apellido_materno') or None
@@ -202,35 +227,52 @@ def vincular_con_codigo(codigo):
             edad = int(request.form.get('edad'))
         except (ValueError, TypeError):
             flash("La edad debe ser un número entero válido.", "danger")
-            return render_template('enfermero/registrar_paciente.html', codigo_qr=codigo, form_data=request.form)
+            estados_data, municipios_data, colonias_data = cargar_datos_ubicacion_enfermero()
+            return render_template('enfermero/registrar_paciente.html', codigo_qr=codigo, form_data=request.form,
+                                   estados=estados_data, municipios=municipios_data, colonias=colonias_data)
             
         telefono = request.form.get('telefono') or None
         ocupacion = request.form.get('ocupacion') or None
-        localidad = request.form.get('localidad') or None
+        
+        # --- CAPTURA DE NUEVOS CAMPOS DE UBICACIÓN ---
+        id_estado = request.form.get('estado')
+        id_municipio = request.form.get('municipio')
+        id_colonia = request.form.get('colonia')
+        codigo_postal = request.form.get('codigo_postal') or None # Permitimos NULL si viene vacío
         
         resultado = None 
         fecha_registro = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        if not nombre or not apellido_paterno or not sexo or not edad:
-            flash("Faltan campos obligatorios (Nombre, Apellido Paterno, Sexo, Edad).", "danger")
-            return render_template('enfermero/registrar_paciente.html', codigo_qr=codigo, form_data=request.form)
+        # --- VALIDACIÓN DE CAMPOS OBLIGATORIOS (AJUSTADA) ---
+        if not all([nombre, apellido_paterno, sexo, edad, id_estado, id_municipio, id_colonia]):
+            flash("Faltan campos obligatorios (Nombre, Apellido Paterno, Sexo, Edad, Estado, Municipio, Colonia).", "danger")
+            estados_data, municipios_data, colonias_data = cargar_datos_ubicacion_enfermero()
+            return render_template('enfermero/registrar_paciente.html', codigo_qr=codigo, form_data=request.form,
+                                   estados=estados_data, municipios=municipios_data, colonias=colonias_data)
 
         paciente_id = None
         
-        # 1. INSERTAR EL PACIENTE
+        # 1. INSERTAR EL PACIENTE (Consulta actualizada con los 4 campos de ubicación)
+        # NOTA: Debes asegurar que tu tabla 'paciente' tenga las columnas id_estado, id_municipio, id_colonia, codigo_postal
         query_insert_paciente = """
-        INSERT INTO paciente (nombre, apellido_paterno, apellido_materno, sexo, edad, telefono, ocupacion, localidad, resultado, fecha_registro)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        INSERT INTO paciente (nombre, apellido_paterno, apellido_materno, sexo, edad, telefono, ocupacion, 
+                              id_estado, id_municipio, id_colonia, codigo_postal, 
+                              resultado, fecha_registro)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """
-        paciente_data = (nombre, apellido_paterno, apellido_materno, sexo, edad, telefono, ocupacion, localidad, resultado, fecha_registro)
+        paciente_data = (nombre, apellido_paterno, apellido_materno, sexo, edad, telefono, ocupacion, 
+                         id_estado, id_municipio, id_colonia, codigo_postal, 
+                         resultado, fecha_registro)
         
         try:
             paciente_id = execute_query(query_insert_paciente, paciente_data, commit=True)
             if paciente_id: paciente_id = int(paciente_id)
         except Exception as e_insert:
             current_app.logger.error(f"Error al insertar paciente: {e_insert}")
-            flash(f"Error CRÍTICO: Falló el registro del paciente: {e_insert}", "danger")
-            return render_template('enfermero/registrar_paciente.html', codigo_qr=codigo, form_data=request.form)
+            flash(f"Error CRÍTICO: Falló el registro del paciente. Verifique la estructura de su tabla 'paciente'. Detalle: {e_insert}", "danger")
+            estados_data, municipios_data, colonias_data = cargar_datos_ubicacion_enfermero()
+            return render_template('enfermero/registrar_paciente.html', codigo_qr=codigo, form_data=request.form,
+                                   estados=estados_data, municipios=municipios_data, colonias=colonias_data)
             
         # 2. ACTUALIZAR QR
         query_update_qr = "UPDATE qr SET estado = 'Vinculado', paciente_id = %s WHERE codigo = %s" 
@@ -247,10 +289,17 @@ def vincular_con_codigo(codigo):
         return redirect(url_for('enfermero_bp.confirmacion_qr', qr_codigo=codigo, paciente_id=paciente_id))
             
     # 5. GET: Mostrar el formulario de registro de paciente
+    
+    # Cargar datos de ubicación solo para el método GET
+    estados_data, municipios_data, colonias_data = cargar_datos_ubicacion_enfermero()
+    
     return render_template('enfermero/registrar_paciente.html', 
-                             codigo_qr=codigo, 
-                             advertencia_vinculado=advertencia_vinculado,
-                             error=error)
+                            codigo_qr=codigo, 
+                            advertencia_vinculado=advertencia_vinculado,
+                            error=error,
+                            estados=estados_data,
+                            municipios=municipios_data,
+                            colonias=colonias_data)
 
 
 # -------------------------------------------------------------------
@@ -315,4 +364,4 @@ def pacientes():
         pacientes_registrados = []
 
     return render_template('enfermero/pacientes.html', 
-                             pacientes=pacientes_registrados)
+                            pacientes=pacientes_registrados)

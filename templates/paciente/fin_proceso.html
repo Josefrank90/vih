@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proceso Finalizado</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            text-align: center;
+            background-color: #D32F2F;
+            font-family: Arial, sans-serif;
+        }
+        .message-box {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #388E3C; /* Verde de éxito */
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="message-box">
+        <h1>¡Proceso de Autoprueba Finalizado!</h1>
+        <p>Gracias por participar en el programa.</p>
+        
+    </div>
+</body>
+</html>

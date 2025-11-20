@@ -1,102 +1,142 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resultado y Recomendaciones</title>
-    
-    {# Asumo que tienes un base.html o CSS básico para dar estilo #}
-    {# Si estás usando un base_simple.html que hereda de base.html, úsalo aquí #}
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado y Recomendaciones</title>
+    
+    {# Asumo que tienes un base.html o CSS básico para dar estilo #}
+    {# Si estás usando un base_simple.html que hereda de base.html, úsalo aquí #}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
-    <style>
-        /* Estilos específicos para la página de resultados */
-        .resultado-card {
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-        }
-        .resultado-display {
-            font-size: 3rem;
-            font-weight: 700;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-radius: 8px;
-            color: white;
-        }
-        .positivo .resultado-display {
-            background-color: #D32F2F; /* Rojo */
-        }
-        .negativo .resultado-display {
-            background-color: #388E3C; /* Verde */
-        }
-        .alert-recomendacion {
-            padding: 20px;
-            margin-top: 20px;
-            border-radius: 8px;
-        }
-        .positivo .alert-recomendacion {
-            border: 2px solid #D32F2F;
-            background-color: #F8D7DA; /* Rosa claro */
-            color: #721C24;
-        }
-        .negativo .alert-recomendacion {
-            border: 2px solid #388E3C;
-            background-color: #D4EDDA; /* Verde claro */
-            color: #155724;
-        }
-        .btn-finalizar {
-            background-color: #6C757D;
-            border-color: #6C757D;
-        }
-        .btn-finalizar:hover {
-            background-color: #5A6268;
-            border-color: #5A6268;
-        }
-    </style>
+    <style>
+        /* Estilos específicos para la página de resultados */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa; /* Fondo claro */
+        }
+        .resultado-card {
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            max-width: 500px;
+            width: 100%;
+        }
+        .resultado-display {
+            font-size: 3rem;
+            font-weight: 700;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            color: white;
+        }
+        .positivo .resultado-display {
+            background-color: #D32F2F; /* Rojo */
+        }
+        .negativo .resultado-display {
+            background-color: #388E3C; /* Verde */
+        }
+        .alert-recomendacion {
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        .positivo .alert-recomendacion {
+            border: 2px solid #D32F2F;
+            background-color: #F8D7DA; /* Rosa claro */
+            color: #721C24;
+        }
+        .negativo .alert-recomendacion {
+            border: 2px solid #388E3C;
+            background-color: #D4EDDA; /* Verde claro */
+            color: #155724;
+        }
+        .btn-finalizar {
+            background-color: #6C757D;
+            border-color: #6C757D;
+            color: white; /* Asegurar texto blanco */
+            border: none;
+            width: 100%;
+            padding: 10px 0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn-finalizar:hover {
+            background-color: #5A6268;
+            border-color: #5A6268;
+        }
+        /* Estilos básicos para simular Bootstrap/Flexbox sin importar la librería completa */
+        .container { width: 100%; padding: 0 15px; }
+        .text-center { text-align: center; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mt-4 { margin-top: 1.5rem; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mt-3 { margin-top: 1rem; }
+        .text-start { text-align: left; }
+        .fw-bold { font-weight: bold; }
+    </style>
 </head>
 <body>
-    {# Puedes usar un contenedor central si no usas herencia de plantilla #}
-    <div class="container d-flex justify-content-center align-items-center min-vh-100">
-        <div class="col-md-8 col-lg-6">
-            <div class="card resultado-card text-center {{ clase_resultado }}">
-                
-                <h1 class="mb-4">Resultado de la Autoprueba VIH</h1>
+    <div class="container">
+        <div class="resultado-card text-center {{ clase_resultado }}">
+            
+            <h1 class="mb-4">Resultado de la Autoprueba VIH</h1>
 
-                <div class="resultado-display">
-                    {{ resultado }}
-                </div>
-                
-                <h3 class="mt-4 mb-3">Recomendaciones:</h3>
+            <div class="resultado-display">
+                {{ resultado }}
+            </div>
+            
+            <h3 class="mt-4 mb-3">Recomendaciones:</h3>
 
-                <div class="alert-recomendacion text-start">
-                    <p>{{ recomendacion }}</p>
-                    
-                    {% if resultado == 'Positivo' %}
-                        <p class="fw-bold mt-3">🔴 Importante: Este resultado debe ser confirmado por un profesional de la salud.</p>
-                    {% else %}
-                        <p class="fw-bold mt-3">✅ ¡Excelente! Mantén tus prácticas de prevención.</p>
-                    {% endif %}
-                </div>
-                
-                <hr class="mt-5 mb-3">
+            <div class="alert-recomendacion text-start">
+                <p>{{ recomendacion }}</p>
+                
+                {% if resultado == 'Positivo' %}
+                    <p class="fw-bold mt-3">🔴 Importante: Este resultado debe ser confirmado por un profesional de la salud.</p>
+                {% else %}
+                    <p class="fw-bold mt-3">✅ ¡Excelente! Mantén tus prácticas de prevención.</p>
+                {% endif %}
+            </div>
+            
+            <hr class="mt-5 mb-3">
 
-                {# Este botón usa JavaScript para cerrar la ventana, ya que la sesión se limpió en paciente.py #}
-                <button onclick="window.close();" class="btn btn-finalizar w-100 py-2">
-                    <i class="fas fa-sign-out-alt"></i> Finalizar Proceso y Cerrar Ventana
-                </button>
-                
-            </div>
-        </div>
-    </div>
-    
-    {# Si estás usando herencia, reemplazarías todo el código anterior con algo como esto: #}
-    {#
-        {% extends "base_simple.html" %} 
-        {% block content %}
-        ... Contenido de la tarjeta arriba ...
-        {% endblock %}
-    #}
+            {# LLAMADA A LA FUNCIÓN REFORZADA DE CIERRE #}
+            <button onclick="finalizarProceso();" class="btn btn-finalizar">
+                <i class="fas fa-sign-out-alt"></i> Finalizar Proceso y Cerrar Ventana
+            </button>
+        </div>
+    </div>
+    
+    <script>
+        function finalizarProceso() {
+            
+            // 1. Intento de Cierre Directo (solo funciona si la ventana fue abierta por script)
+            window.close();
+
+            // 2. Si el cierre es bloqueado, redirigimos a una página final y limpiamos el historial.
+            setTimeout(() => {
+                // Intentar reemplazar el estado del historial para evitar el botón 'atrás'
+                if (window.history.replaceState) {
+                    // Nota: Asume que tienes la ruta 'paciente_bp.fin_proceso' definida.
+                    // Usamos la URL completa del Flask para asegurar la navegación.
+                    window.history.replaceState(null, null, '{{ url_for("paciente_bp.fin_proceso") }}');
+                }
+
+                // Redirige a la página final
+                window.location.replace('{{ url_for("paciente_bp.fin_proceso") }}');
+
+                // Si todo lo anterior falla (navegador muy restrictivo), muestra un mensaje
+                document.body.innerHTML = '<div style="text-align:center; padding: 50px;"><h1>Proceso Finalizado.</h1><p>Gracias por usar el sistema. Puede cerrar la ventana ahora.</p></div>';
+
+            }, 100); // Pequeño retraso para dar tiempo a window.close()
+        }
+    </script>
 </body>
 </html>

@@ -2,37 +2,192 @@
 
 {% block title %}Resultado Autoprueba{% endblock %}
 
+{% block head %}
+    {{ super() }}
+    <style>
+        /* Variables y Colores */
+        :root {
+            --color-primary-red: #D32F2F;
+            --color-success-green: #388E3C;
+            --color-text-muted: #6c757d;
+            --color-card-bg: #ffffff;
+            --color-border-light: #e0e0e0;
+        }
+
+        /* Estilos de Contenedor y Centrado */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f8f9fa;
+        }
+        
+        .card {
+            max-width: 500px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background-color: var(--color-card-bg);
+            box-sizing: border-box; /* Incluye padding en el ancho */
+        }
+
+        /* Títulos y Texto */
+        h2 {
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--color-primary-red);
+            text-align: center;
+        }
+        .text-muted {
+            font-size: 1.05rem;
+            margin-bottom: 30px;
+            color: var(--color-text-muted);
+            text-align: center;
+        }
+        
+        /* Contenedor de Opciones */
+        .resultado-opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 40px;
+            padding: 0;
+            list-style: none;
+        }
+
+        /* Estilo para cada Opción de Radio (Simulación de Bootstrap Check) */
+        .opcion-resultado {
+            position: relative; /* Para posicionar el radio custom */
+            display: block;
+            padding: 20px 25px;
+            border: 2px solid var(--color-border-light);
+            border-radius: 10px;
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            user-select: none; /* Evitar que el texto se seleccione al hacer clic */
+        }
+
+        .opcion-resultado:hover {
+            border-color: #aaa;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Ocultar el radio nativo */
+        .opcion-input {
+            opacity: 0;
+            position: absolute;
+        }
+
+        /* Estilo del texto */
+        .opcion-label {
+            font-weight: 700;
+            font-size: 1.5rem;
+            margin-left: 35px; /* Espacio para el círculo custom */
+        }
+
+        /* Círculo de Radio Custom (Antes del Label) */
+        .opcion-label::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--color-text-muted);
+            background-color: var(--color-card-bg);
+            transition: all 0.2s;
+        }
+
+        /* Círculo interior (Después del Label, marcado) */
+        .opcion-label::after {
+            content: '';
+            position: absolute;
+            left: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: white; /* Color del punto interior */
+            opacity: 0; /* Oculto por defecto */
+            transition: opacity 0.2s;
+        }
+
+        /* Estado SELECCIONADO */
+        .opcion-input:checked + .opcion-label::before {
+            background-color: var(--color-primary-red);
+            border-color: var(--color-primary-red);
+        }
+
+        /* Mostrar punto interior cuando está checked */
+        .opcion-input:checked + .opcion-label::after {
+            opacity: 1;
+        }
+
+        /* Colores de texto específicos */
+        .text-negativo { color: var(--color-success-green); }
+        .text-positivo { color: var(--color-primary-red); }
+
+        /* Botón de Envío */
+        .btn-submit {
+            background-color: var(--color-primary-red);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn-submit:hover {
+            background-color: #a52a2a; /* Tono más oscuro de rojo */
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-<div class="card p-5 shadow-lg">
-    <h2 class="text-center text-danger">Paso Final: Ingresa tu Resultado</h2>
-    <p class="text-center lead">Paciente: <strong>{{ nombre_paciente }}</strong></p>
+<div class="card">
+    <h2 class="text-center">Paso Final: Ingresa tu Resultado</h2>
     
-    <p class="text-muted text-center">
+    <p class="text-muted">
         Selecciona el resultado que obtuviste en tu prueba de autodiagnóstico VIH. 
         Este paso es irreversible y confidencial.
     </p>
 
     <form method="POST" action="{{ url_for('paciente_bp.guardar_resultado') }}">
         
-        <div class="form-group mb-5 text-center">
-            <label class="form-label d-block mb-3 h4">Resultado de la Prueba:</label>
+        <div class="form-group">
             
-            <div class="form-check form-check-inline mx-4">
-                <input class="form-check-input" type="radio" name="resultado" id="resultadoNegativo" value="Negativo" required style="transform: scale(1.5);">
-                <label class="form-check-label text-success fw-bold" for="resultadoNegativo" style="font-size: 1.5rem;">
-                    Negativo
+            <label class="form-label d-block h4" style="text-align: center;">Resultado de la Prueba:</label>
+            
+            <div class="resultado-opciones">
+                
+                {# Opción NEGATIVO #}
+                <label for="resultadoNegativo" class="opcion-resultado">
+                    <input type="radio" name="resultado" id="resultadoNegativo" value="Negativo" required class="opcion-input">
+                    <span class="opcion-label text-negativo">Negativo</span>
                 </label>
+                
+                {# Opción POSITIVO #}
+                <label for="resultadoPositivo" class="opcion-resultado">
+                    <input type="radio" name="resultado" id="resultadoPositivo" value="Positivo" required class="opcion-input">
+                    <span class="opcion-label text-positivo">Positivo</span>
+                </label>
+                
             </div>
             
-            <div class="form-check form-check-inline mx-4">
-                <input class="form-check-input" type="radio" name="resultado" id="resultadoPositivo" value="Positivo" required style="transform: scale(1.5);">
-                <label class="form-check-label text-danger fw-bold" for="resultadoPositivo" style="font-size: 1.5rem;">
-                    Positivo
-                </label>
-            </div>
         </div>
         
-        <button type="submit" class="btn btn-danger w-100 py-2">
+        <button type="submit" class="btn-submit">
             GUARDAR RESULTADO Y VER RECOMENDACIONES
         </button>
         

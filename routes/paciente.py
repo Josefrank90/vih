@@ -7,10 +7,10 @@ paciente_bp = Blueprint('paciente_bp', __name__, url_prefix='/paciente')
 # --- DEFINICIÓN DE ETAPAS DEL FLUJO FINAL ---
 FLUJO_PACIENTE = [
     'bienvenida',
-    'video_educativo',     # Etapa 2
-    'cuestionario',        # Etapa 3
-    'ingreso_resultado',   # Etapa 4
-    'resultados'           # Etapa 5
+    'video_educativo',      # Etapa 2
+    'cuestionario',         # Etapa 3
+    'ingreso_resultado',    # Etapa 4
+    'resultados'            # Etapa 5
 ]
 
 
@@ -35,14 +35,12 @@ def acceso_qr(qr_codigo):
     resultado_paciente = qr_data.get('resultado')
     
     # ------------------------------------------------------------------
-    # 🟢 LÓGICA DE REDIRECCIÓN DUAL (SOLUCIÓN)
+    # 🟢 LÓGICA DE REDIRECCIÓN DUAL
     # ------------------------------------------------------------------
 
     # A. ESCENARIO DE VINCULACIÓN (ENFERMERO)
     # Si el QR está 'Generado' (es nuevo), redirigir al formulario del ENFERMERO.
-    # El móvil del enfermero estará logueado o tendrá acceso directo a esta ruta.
     if qr_estado == 'Generado' and paciente_id is None:
-        # El QR aún no ha sido vinculado; se asume que lo escanea el enfermero.
         flash("Código QR detectado. Continúe con el registro del paciente.", "info")
         return redirect(url_for('enfermero_bp.vincular_con_codigo', codigo=qr_codigo))
 
@@ -54,7 +52,7 @@ def acceso_qr(qr_codigo):
         if resultado_paciente is not None:
             flash("Ya has completado tu autodiagnóstico.", "info")
             return redirect(url_for('paciente_bp.mostrar_resultados', 
-                                    resultado=resultado_paciente))
+                                     resultado=resultado_paciente))
         
         # 2. Si el paciente NO ha completado el autodiagnóstico, inicia su flujo.
         session.clear() 
@@ -121,7 +119,7 @@ def siguiente_paso():
             return redirect(url_for('paciente_bp.control_flujo_paciente'))
         else:
             # Si intenta avanzar más allá de la última etapa, redirige a la finalización
-            return redirect(url_for('paciente_bp.cerrar_sesion_final'))
+            return redirect(url_for('paciente_bp.fin_proceso'))
             
     except ValueError:
         flash("Error en la secuencia del flujo. Reinicie el proceso.", "danger")
@@ -186,9 +184,9 @@ def guardar_resultado():
 
 
 # -------------------------------------------------------------------
-# --- 6. RUTA PARA MOSTRAR LA PANTALLA FINAL DE RESULTADOS/RECOMENDACIONES ---
+# --- 6. RUTA PARA MOSTRAR LA PANTALLA FINAL DE RESULTADOS/RECOMENDACIONES (RENOMBRADA) ---
 # -------------------------------------------------------------------
-@paciente_bp.route('/resultados_final')
+@paciente_bp.route('/resultados')
 def mostrar_resultados():
     """Muestra la página de resultados y recomendaciones (Positivo/Negativo)."""
     
@@ -207,15 +205,26 @@ def mostrar_resultados():
         clase = 'negativo'
 
     return render_template('paciente/resultados.html', 
-                           resultado=resultado, 
-                           recomendacion=recomendacion,
-                           clase_resultado=clase)
+                            resultado=resultado, 
+                            recomendacion=recomendacion,
+                            clase_resultado=clase)
 
 
 # -------------------------------------------------------------------
-# --- 7. RUTA DE CIERRE DE SESIÓN (PANTALLA FINAL) ---
+# --- 7. RUTA FINAL DEL PROCESO (PÁGINA DE CIERRE REFORZADO) ---
+# -------------------------------------------------------------------
+@paciente_bp.route('/fin_proceso')
+def fin_proceso():
+    """Página final a la que se redirige el paciente. Contiene solo un mensaje de cierre."""
+    # La plantilla 'paciente/fin_proceso.html' debería tener un mensaje simple como:
+    # "Gracias por participar. Proceso completado. Puede cerrar la ventana."
+    return render_template('paciente/fin_proceso.html')
+
+
+# -------------------------------------------------------------------
+# --- 8. RUTA DE CIERRE DE SESIÓN (OBSOLETA, USAR /fin_proceso) ---
 # -------------------------------------------------------------------
 @paciente_bp.route('/cerrar_sesion_final')
 def cerrar_sesion_final():
-    """Muestra la pantalla de agradecimiento ('finalizado.html') y luego cierra la sesión."""
-    return render_template('paciente/finalizado.html')
+    """Ruta obsoleta, redirigida a fin_proceso."""
+    return redirect(url_for('paciente_bp.fin_proceso'))

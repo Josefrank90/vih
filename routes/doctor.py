@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash, request, send_file, current_app
+from flask import Blueprint, render_template, session, redirect, url_for, flash, request, send_file, current_app, jsonify
 from database.connection import execute_query 
 from datetime import datetime
 from functools import wraps 
@@ -14,7 +14,7 @@ import zipfile
 import os 
 
 
-IP_DEL_SERVIDOR = '192.168.1.130' 
+IP_DEL_SERVIDOR = '192.168.100.147' 
 PUERTO = '5000'
 BASE_URL = f"http://{IP_DEL_SERVIDOR}:{PUERTO}"
 
@@ -357,7 +357,7 @@ def descargar_reporte_pdf():
         c.setFont("Helvetica", 10)
 
         tasa_positividad = metricas.get('tasa_positividad', 0.0)
-        tasa_negativa = metricas.get('tasa_negatividad', 0.0)
+        tasa_negativa = metricas.get('tasa_negativa', 0.0)
 
         datos_tasas = [
             (f"Casos Positivos:", f"{metricas.get('casos_positivos', 0)}"),
@@ -456,123 +456,181 @@ def descargar_reporte_pdf():
 
 
 # -------------------------------------------------------------------
-# --- 2. GENERAR QR (ACTUALIZADO: DESCARGA INMEDIATA PDF MULTI-PÁGINA) ---
+# --- FUNCIÓN AUXILIAR PARA CARGAR DATOS DE UBICACIÓN (NUEVA) ---
+# -------------------------------------------------------------------pendiente
+def cargar_datos_ubicacion():
+    """Consulta y retorna todos los estados, municipios y colonias."""
+    try:
+        # 1. Cargar todos los estados
+        query_estados = "SELECT id, nombre FROM estados ORDER BY nombre;"
+        estados_data = execute_query(query_estados) or []
+        
+        # 2. Cargar todos los municipios
+        query_municipios = "SELECT id, nombre, estado FROM municipios ORDER BY nombre;"
+        municipios_data = execute_query(query_municipios) or []
+        
+        # 3. Cargar todas las colonias (incluyendo CP para el autocompletado en JS)
+        query_colonias = "SELECT id, nombre, codigo_postal, municipio FROM colonias ORDER BY nombre;"
+        colonias_data = execute_query(query_colonias) or []
+
+    except Exception as e:
+        current_app.logger.error(f"Error al cargar la lista de ubicaciones estáticas: {e}")
+        estados_data = []
+        municipios_data = []
+        colonias_data = []
+    
+    return estados_data, municipios_data, colonias_data
+
+
+# -------------------------------------------------------------------
+# --- 2. GENERAR QR (CARGA COMPLETA DE UBICACIÓN) ---
 # -------------------------------------------------------------------
 @doctor_bp.route('/generar_qr', methods=['GET', 'POST'])
 @doctor_login_required 
 def generar_qr():
-    # Inicializar 'data' con valores por defecto para el método GET.
-    data = {
-        'campaign_number': request.form.get('campaign_number', ''), 
-        'delivery_location': request.form.get('delivery_location', ''), 
-        'delivery_date': request.form.get('delivery_date', datetime.now().strftime('%Y-%m-%d')), 
-        'quantity': request.form.get('quantity', '1') 
-    }
     
-    numero_campana = data['campaign_number'] 
-    lugar_entrega = data['delivery_location'] 
-    fecha_entrega_str = data['delivery_date']
-    cantidad_qr_str = data['quantity']
-    
+    # --- LÓGICA POST (Envío del formulario) ---
     if request.method == 'POST':
         
+        data = request.form # Guardar datos para rellenar en caso de error
+        
         try:
+            # 1. CAPTURA DE VARIABLES
+            # Capturamos todos los campos como .get() para evitar errores si no están marcados/rellenados
+            
+            # Campos principales
+            numero_campana = request.form.get('campaign_number')
+            fecha_entrega_str = request.form.get('delivery_date')
+            cantidad_qr_str = request.form.get('quantity')
+
+            # IDs de ubicación
+            id_estado = request.form.get('estado')
+            id_municipio = request.form.get('municipio')
+            id_colonia = request.form.get('colonia')
+            codigo_postal = request.form.get('codigo_postal')
+            
+            # --------------------------------------------------------------------------
+            # VALIDACIÓN: Se ajusta la validación de all() para no fallar si el CP es None/""
+            # --------------------------------------------------------------------------
+            # Se valida SOLO los campos de ID y Cantidad.
+            if not all([numero_campana, fecha_entrega_str, cantidad_qr_str, id_estado, id_municipio, id_colonia]):
+                flash("Todos los campos, incluidos los de ubicación, son obligatorios.", "danger")
+                # Recargar datos y renderizar con el mensaje de error
+                estados_data, municipios_data, colonias_data = cargar_datos_ubicacion()
+                return render_template('doctor/generar_qr.html', data=data, estados=estados_data, municipios=municipios_data, colonias=colonias_data, today=datetime.now().strftime('%Y-%m-%d')), 400
+
             cantidad_qr = int(cantidad_qr_str)
             fecha_entrega = datetime.strptime(fecha_entrega_str, '%Y-%m-%d').date()
-        except (ValueError, TypeError):
-            flash("Error en la cantidad o formato de fecha. Usa números enteros y el formato AAAA-MM-DD.", "danger")
-            return render_template('doctor/generar_qr.html', data=data)
+
+        except (ValueError, TypeError) as e:
+            flash(f"Error en la cantidad o formato de fecha. Usa números enteros y el formato AAAA-MM-DD. Detalle: {e}", "danger")
+            estados_data, municipios_data, colonias_data = cargar_datos_ubicacion()
+            return render_template('doctor/generar_qr.html', data=data, estados=estados_data, municipios=municipios_data, colonias=colonias_data, today=datetime.now().strftime('%Y-%m-%d'))
         
         if cantidad_qr <= 0 or cantidad_qr > 100: # Limitamos a 100 por lote PDF
             flash("La cantidad de QRs debe ser mayor a cero y menor a 100 por lote.", "warning")
-            return render_template('doctor/generar_qr.html', data=data)
-        
-        if not numero_campana or not lugar_entrega:
-            flash("La Campaña y el Lugar de Entrega son obligatorios.", "warning")
-            return render_template('doctor/generar_qr.html', data=data)
+            estados_data, municipios_data, colonias_data = cargar_datos_ubicacion()
+            return render_template('doctor/generar_qr.html', data=data, estados=estados_data, municipios=municipios_data, colonias=colonias_data, today=datetime.now().strftime('%Y-%m-%d'))
         
         estado = "Generado"
         qrs_generados_exitosamente = 0
         codigos_generados = [] # Lista para el PDF
 
         try:
-            # 1. Bucle para generar e insertar N códigos en la DB
+            # 2. Bucle para generar e insertar N códigos en la DB
             for i in range(cantidad_qr):
                 codigo_qr_unico = str(uuid.uuid4())
                 
+                # --- CONSULTA INSERT FINAL (AJUSTADA A TU TABLA QR) ---
+                # Columnas: codigo, numero_campana, fecha_entrega, estado, id_estado, id_municipio, id_colonia, codigo_postal, paciente_id
                 query = """
-                INSERT INTO qr (codigo, numero_campana, lugar_entrega, fecha_entrega, estado)
-                VALUES (%s, %s, %s, %s, %s)
+                INSERT INTO qr 
+                (codigo, numero_campana, fecha_entrega, estado, id_estado, id_municipio, id_colonia, codigo_postal, paciente_id)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, NULL)
                 """
-                success = execute_query(query, (codigo_qr_unico, numero_campana, lugar_entrega, fecha_entrega, estado), commit=True)
+                params = (
+                    codigo_qr_unico, numero_campana, fecha_entrega, estado,
+                    id_estado, id_municipio, id_colonia, codigo_postal
+                )
+                
+                # NOTA: El campo 'paciente_id' se inserta como NULL para coincidir con tu tabla.
+                success = execute_query(query, params, commit=True)
                 
                 if success is not None and success > 0:
                     qrs_generados_exitosamente += 1
                     codigos_generados.append(codigo_qr_unico) # Guardar el código para el PDF
                 
             
+            # 3. Generación y Envío del PDF
             if qrs_generados_exitosamente > 0:
-                # --- Generar PDF Multi-página para la descarga ---
                 pdf_buffer = BytesIO()
                 c = canvas.Canvas(pdf_buffer, pagesize=letter)
                 width, height = letter
                 
                 x_margin = 60
                 y_start = height - 50
-                qr_size = 180 # Tamaño del QR en puntos
+                qr_size = 180 
                 line_spacing = 30
                 
                 for index, codigo in enumerate(codigos_generados):
-                    # Iniciar nueva página si es necesario (ej: cada 3 QRs por página)
                     if index > 0 and index % 3 == 0:
                         c.showPage()
                         y_start = height - 50
                     
-                    y_position = y_start - (index % 3) * 220 # Ajuste vertical para cada QR
+                    y_position = y_start - (index % 3) * 220 
                     
-                    # 1. URL de Acceso del Paciente (para codificar)
-                    # La URL debe ser escaneada por el ENFERMERO para iniciar el registro.
                     url_para_qr = f"{BASE_URL}{url_for('paciente_bp.acceso_qr', qr_codigo=codigo)}" 
                     
-                    # 2. Dibujar información textual
                     c.setFont("Helvetica-Bold", 14)
                     c.drawString(x_margin, y_position, f"Campaña: {numero_campana}")
                     c.setFont("Helvetica", 10)
                     y_position -= line_spacing
-                    c.drawString(x_margin, y_position, f"Lugar: {lugar_entrega}")
+                    # NOTA: Usamos CP y ID de Colonia para referencia ya que 'lugar_entrega' fue eliminado.
+                    c.drawString(x_margin, y_position, f"CP: {codigo_postal} (Colonia ID: {id_colonia})") 
                     y_position -= line_spacing
-                    c.drawString(x_margin, y_position, f"Código: {codigo}")
+                    c.drawString(x_margin, y_position, f"Código QR: {codigo}")
 
-                    # 3. Dibujar QR
                     qr_img = qrcode.make(url_para_qr)
                     img_buffer = BytesIO(); qr_img.save(img_buffer, "PNG"); img_buffer.seek(0)
                     qr_image_reader = ImageReader(img_buffer)
                     
                     c.drawImage(qr_image_reader, x_margin + 300, y_position - qr_size + 30, width=qr_size, height=qr_size)
                     
-                # Finalizar y forzar descarga
                 c.showPage(); c.save(); pdf_buffer.seek(0)
                 
                 flash(f"✅ ¡Éxito! Se generaron y registraron {qrs_generados_exitosamente} QRs. El PDF está descargando.", "success")
                 
-                # CLAVE: Devolver el PDF
                 return send_file(pdf_buffer, 
                                  as_attachment=True, 
                                  download_name=f"QRs_Lote_{numero_campana}_{datetime.now().strftime('%Y%m%d')}.pdf", 
                                  mimetype='application/pdf')
             
-            # --------------------------------------------------------
             else:
                 flash("Error al generar los QRs. No se insertó ninguno en la base de datos.", "danger")
                 
         except Exception as e:
             flash(f"Error CRÍTICO al generar QRs y PDF: {e}", "danger")
-            current_app.logger.error(f"Error en generar_qr: {e}")
+            current_app.logger.error(f"Error en generar_qr [POST]: {e}")
             
         return redirect(url_for('doctor_bp.dashboard')) # Fallback a dashboard en caso de error
 
-    # GET: Muestra el formulario, pasando el diccionario 'data' inicializado con valores por defecto.
-    return render_template('doctor/generar_qr.html', data=data)
+    # --- LÓGICA GET (Mostrar el formulario) ---
+    data = {
+        'campaign_number': '', 
+        'delivery_date': datetime.now().strftime('%Y-%m-%d'), 
+        'quantity': '1' 
+    }
+    
+    # Cargar todos los datos de ubicación
+    estados_data, municipios_data, colonias_data = cargar_datos_ubicacion()
+
+    return render_template('doctor/generar_qr.html', 
+                           data=data, 
+                           estados=estados_data, 
+                           municipios=municipios_data,
+                           colonias=colonias_data,
+                           today=datetime.now().strftime('%Y-%m-%d'))
+
 
 # -------------------------------------------------------------------
 # --- 3. RUTA DE DESCARGA INDIVIDUAL DE QR (Desde el Dashboard) ---
@@ -581,7 +639,8 @@ def generar_qr():
 @doctor_login_required 
 def descargar_qr(codigo_qr):
 
-    query = "SELECT codigo, numero_campana, lugar_entrega FROM qr WHERE codigo = %s"
+    # NOTA: Se actualiza el SELECT para obtener codigo_postal
+    query = "SELECT codigo, numero_campana, codigo_postal, id_colonia FROM qr WHERE codigo = %s"
     qr_data = execute_query(query, (codigo_qr,), fetch_one=True)
     
     if not qr_data:
@@ -589,10 +648,8 @@ def descargar_qr(codigo_qr):
         return redirect(url_for('doctor_bp.dashboard')) 
     
     try:
-        # Asegúrate de que 'paciente_bp.acceso_qr' esté definido en tu otra Blueprint
         url_para_qr = f"{BASE_URL}{url_for('paciente_bp.acceso_qr', qr_codigo=codigo_qr)}"
         
-        # Generación del PDF
         pdf_buffer = BytesIO()
         c = canvas.Canvas(pdf_buffer, pagesize=letter)
         width, height = letter
@@ -601,9 +658,10 @@ def descargar_qr(codigo_qr):
         c.setFont("Helvetica", 10)
         c.drawString(50, height - 90, f"Código: {qr_data['codigo'][:8]}...")
         c.drawString(50, height - 110, f"Campaña: {qr_data['numero_campana']}")
-        c.drawString(50, height - 130, f"Lugar: {qr_data['lugar_entrega']}")
+        # Muestra la ubicación, ya que 'lugar_entrega' fue eliminado.
+        c.drawString(50, height - 130, f"CP: {qr_data['codigo_postal']} (Colonia ID: {qr_data.get('id_colonia', 'N/D')})") 
+        
 
-        # Dibujar QR
         qr_img = qrcode.make(url_para_qr)
         img_buffer = BytesIO(); qr_img.save(img_buffer, "PNG"); img_buffer.seek(0)
         qr_image_reader = ImageReader(img_buffer)
