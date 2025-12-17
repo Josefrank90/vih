@@ -1,30 +1,24 @@
-# app.py (VERSIÓN FINAL Y LIMPIA)
-
 from flask import Flask, redirect, url_for, session, g, current_app
-# Asegúrate de importar la clase Config para usar app.config.from_object
 from config import Config
 import os
 from dotenv import load_dotenv
 
-# 🚨 CRÍTICO: Carga las variables de entorno de .env (si usas un archivo .env)
+
 load_dotenv() 
 
-# Asegúrate de que tus blueprints estén en 'routes/'
+#rutas
 from routes.auth import auth_bp
 from routes.doctor import doctor_bp
 from routes.enfermero import enfermero_bp
 from routes.paciente import paciente_bp 
 
-# Asegúrate de que close_db esté en database/connection.py
+#ruta de la conexión a la base de datos
 from database.connection import close_db 
 
 # 1. Configuración de la aplicación
 app = Flask(__name__)
 # Carga la configuración desde la clase Config
 app.config.from_object(Config) 
-
-# 💥 LÍNEA ELIMINADA: La limpieza forzada de sesión (session.clear()) ha sido eliminada. 💥
-# La limpieza ahora se realiza correctamente dentro de la función acceso_qr.
 
 # 2. Registro de Blueprints
 # Los prefijos definen las URLs base (e.g., /auth/login, /doctor/dashboard)

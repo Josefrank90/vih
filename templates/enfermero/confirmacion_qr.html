@@ -3,88 +3,156 @@
 
 {% block title %}Confirmación de Vinculación{% endblock %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+<style>
+    /* Variables y estilos adicionales para mejorar la estética Bootstrap */
+    :root {
+        --color-primary-red: #D32F2F; 
+        --color-success-green: #28a745; 
+        --color-text-dark: #212529;
+    }
+    
+    .card-header.bg-success {
+        background-color: var(--color-success-green) !important;
+    }
+    
+    /* Estilo del contenedor de la URL para mejor visibilidad */
+    .url-display {
+        background-color: #f8f9fa; /* Color Bootstrap light */
+        border: 1px solid #dee2e6;
+        padding: 15px;
+        border-radius: 6px;
+        word-break: break-all;
+        font-family: monospace;
+        font-size: 1.05rem;
+        color: var(--color-text-dark);
+        margin-top: 10px;
+    }
+    
+    /* Estilo del botón principal (Copiar URL) para que destaque */
+    .btn-copy-main {
+        background-color: var(--color-primary-red) !important;
+        border-color: var(--color-primary-red) !important;
+        color: white;
+        font-weight: 700;
+        padding: 12px 20px;
+        transition: background-color 0.3s;
+    }
+    .btn-copy-main:hover {
+        background-color: #A52A2A !important;
+        border-color: #A52A2A !important;
+    }
+
+    /* Estilo del nuevo botón de cierre */
+    .btn-close-main {
+        background-color: var(--color-text-muted) !important;
+        border-color: var(--color-text-muted) !important;
+        color: white;
+        font-weight: 700;
+        padding: 12px 20px;
+        transition: background-color 0.3s;
+    }
+    .btn-close-main:hover {
+        background-color: #5A6268 !important;
+        border-color: #5A6268 !important;
+    }
+
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-success">
-                <div class="card-header bg-success text-white">
-                    <h4 class="mb-0"><i class="fas fa-check-circle"></i> Vinculación Exitosa</h4>
-                </div>
-                <div class="card-body">
-                    
-                    {# Muestra el mensaje flash de éxito que viene de enfermero.py #}
-                    {% with messages = get_flashed_messages(with_categories=true) %}
-                        {% if messages %}
-                            {% for category, message in messages %}
-                                {% if category == 'success' %}
-                                    <p class="lead">{{ message }}</p>
-                                {% else %}
-                                    <p class="lead">El paciente ha sido registrado y el QR ha sido vinculado correctamente.</p>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <p class="lead">El paciente ha sido registrado y el QR ha sido vinculado correctamente.</p>
-                        {% endif %}
-                    {% endwith %}
-                    
-                    <hr>
-                    
-                    <h5 class="text-primary mt-4">Instrucciones para el Paciente:</h5>
-                    <p>Proporcione la siguiente URL al paciente para que inicie su flujo de autoprueba **sin necesidad de iniciar sesión**.</p>
-                    
-                    <div class="alert alert-info text-break p-3" role="alert">
-                        <strong>URL de Acceso Directo:</strong>
-                        <h4 class="mt-2" id="paciente-url">{{ url_completa }}</h4>
-                    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            {# Sombra y borde profesional, utilizando clases de Bootstrap #}
+            <div class="card shadow-lg border-success" style="border-radius: 12px;">
+                <div class="card-header bg-success text-white" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
+                    <h4 class="mb-0" style="font-weight: 700;"><i class="fas fa-check-circle"></i> Vinculación Exitosa</h4>
+                </div>
+                <div class="card-body">
+                    
+                    {# Mensaje de confirmación #}
+                    <p class="lead text-center" style="font-weight: 500; color: var(--color-text-dark);">
+                        El paciente ha sido registrado y el QR ha sido vinculado correctamente.
+                    </p>
+                    
+                    <hr>
+                    
+                    <h5 class="text-primary mt-4" style="font-weight: 600;">Instrucciones para el Paciente:</h5>
+                    <p class="text-muted">Proporcione la siguiente URL al paciente para que inicie su flujo de autoprueba <strong>sin necesidad de iniciar sesión</strong>.</p>
+                    
+                    {# URL de Acceso Directo Destacada #}
+                    <div class="alert alert-info text-break p-3" role="alert">
+                        <strong>URL de Acceso Directo:</strong>
+                        <div class="url-display" id="paciente-url">
+                            {# Usar url_completa (variable de Jinja) #}
+                            {{ url_completa }}
+                        </div>
+                    </div>
 
-                    <div class="d-flex justify-content-between align-items-center mt-4">
-                        <p class="mb-0">
-                            <small class="text-muted">ID Paciente: **{{ paciente_id }}** | Código QR: **{{ qr_codigo }}**</small>
-                        </p>
-                        
-                        {# Botón para copiar la URL al portapapeles #}
-                        <button class="btn btn-sm btn-outline-primary" onclick="copiarURL()">
-                            <i class="fas fa-copy"></i> Copiar URL
-                        </button>
-                    </div>
+                    <div class="d-flex justify-content-between align-items-center mt-4 mb-3">
+                        <p class="mb-0">
+                            <small class="text-muted">ID Paciente: <b>{{ paciente_id }}</b> | Código QR: <b>{{ qr_codigo }}</b></small>
+                        </p>
+                        
+                        {# Botón Copiar URL #}
+                        <button class="btn btn-sm btn-outline-primary btn-copy-main" onclick="copiarURL()">
+                            <i class="fas fa-copy"></i> Copiar URL
+                        </button>
+                    </div>
 
-                    <hr>
-                    
-                    <div class="text-center mt-4">
-                        {# NOTA: Los enlaces al dashboard o vincular_inicio requerirán login si no lo tienen #}
-                        <a href="{{ url_for('enfermero_bp.vincular_inicio') }}" class="btn btn-info">
-                            <i class="fas fa-qrcode"></i> Vincular Nuevo QR
-                        </a>
-                        <a href="{{ url_for('enfermero_bp.dashboard') }}" class="btn btn-secondary me-2">
-                            <i class="fas fa-home"></i> Volver al Dashboard
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <hr>
+                    
+                    <div class="text-center mt-4">
+                        {# BOTÓN CERRAR VENTANA (Único botón principal) #}
+                        <button class="btn btn-block btn-close-main" onclick="cerrarVentana()">
+                            <i class="fas fa-times-circle"></i> CERRAR VENTANA
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+{% endblock content %}
+
+{% block scripts %}
 <script>
-    function copiarURL() {
-        const urlElement = document.getElementById('paciente-url');
-        const textToCopy = urlElement.innerText;
-        
-        // Crea un elemento de texto temporal para copiar
-        const tempTextArea = document.createElement('textarea');
-        tempTextArea.value = textToCopy;
-        document.body.appendChild(tempTextArea);
-        
-        // Selecciona y copia el texto
-        tempTextArea.select();
-        document.execCommand('copy');
-        
-        // Elimina el elemento temporal
-        document.body.removeChild(tempTextArea);
-        
-        // Alerta o feedback visual
-        alert("URL copiada al portapapeles: " + textToCopy);
-    }
+    function copiarURL() {
+        const urlElement = document.getElementById('paciente-url');
+        const textToCopy = urlElement.innerText;
+        
+        // Usar la API del portapapeles moderna
+        navigator.clipboard.writeText(textToCopy)
+            .then(() => {
+                alert('¡URL de acceso copiada! Compártela con el paciente.');
+            })
+            .catch(err => {
+                // Fallback si la API moderna falla o es bloqueada
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempTextArea);
+                alert('¡URL de acceso copiada! Compártela con el paciente.');
+            });
+    }
+
+    function cerrarVentana() {
+        // 1. Intenta cerrar la ventana/pestaña actual (funciona si fue abierta por script)
+        window.close();
+        
+        // 2. Fallback: Si el navegador bloquea window.close(), redirigimos al dashboard del enfermero.
+        // Esto elimina la página actual del historial sin mostrar un mensaje de error.
+        setTimeout(() => {
+            // Reemplazar la ubicación con el dashboard de enfermero (o la página de inicio)
+            window.location.replace('{{ url_for("enfermero_bp.dashboard") }}'); 
+        }, 100); 
+    }
 </script>
-{% endblock %}
+{% endblock scripts %}

@@ -2,27 +2,227 @@
 
 {% block title %}Iniciar Sesión{% endblock %}
 
-{% block content %}
+{% block head %}
+    {{ super() }}
+    <style>
+        /* --- VARIABLES DE COLOR --- */
+        :root {
+            --color-primary-red: #D32F2F; /* Rojo principal para el botón y acentos */
+            --color-card-bg: #FFFFFF; /* Fondo de la tarjeta */
+            --color-light-pink: #FFF5F5; /* Rosa claro para la columna izquierda */
+            --color-text-dark: #212529;
+            --color-text-muted: #6c757d;
+            --color-border-light: #e0e0e0;
+        }
 
-{# Nota: Asumimos que base_simple.html carga static/css/style.css, donde está todo el diseño del login. #}
+        /* --- CONTENEDOR PRINCIPAL --- */
+        /* Eliminamos el fondo forzado del body aquí para que base_simple.html use el rojo */
+        body {
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            min-height: 100vh !important;
+            margin: 0 !important;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
+        }
+
+        .login-container {
+            display: flex;
+            width: 90%;
+            max-width: 900px; /* Tamaño ideal para un login dual */
+            background: var(--color-card-bg);
+            border-radius: 25px; /* Bordes redondeados profesionales */
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25); /* Sombra marcada y atractiva */
+            overflow: hidden; /* Asegura que las esquinas sean suaves */
+            animation: fadeInScale 0.8s ease-out forwards;
+        }
+        
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* --- COLUMNA IZQUIERDA (ILUSTRACIÓN) --- */
+        .login-left {
+            background-color: var(--color-light-pink);
+            width: 40%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px 10px;
+            position: relative;
+        }
+
+        .imagen-decorativa-login {
+            width: 100%;
+            height: auto;
+            max-width: 250px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer-left p {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+        }
+
+        /* --- COLUMNA DERECHA (FORMULARIO) --- */
+        .login-right {
+            width: 60%;
+            padding: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .login-form-area h2 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--color-text-dark);
+            margin-bottom: 30px;
+            border-left: 4px solid var(--color-primary-red);
+            padding-left: 15px;
+            text-align: left;
+        }
+
+        /* --- ESTILOS DE FORMULARIO MEJORADOS --- */
+        .form-label {
+            display: block;
+            text-align: left;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: var(--color-text-dark);
+            font-size: 1rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 25px;
+            border: 1px solid var(--color-border-light);
+            border-radius: 10px;
+            box-sizing: border-box;
+            font-size: 1.1rem;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-primary-red);
+            box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.2); /* Sombra suave al enfocar */
+        }
+        
+        /* --- BOTÓN DE LOGIN (Animado y Atractivo) --- */
+        .login-button {
+            width: 100%;
+            background: linear-gradient(90deg, #E53935 0%, var(--color-primary-red) 100%);
+            border: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            padding: 18px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+        }
+
+        .login-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(211, 47, 47, 0.6); 
+        }
+
+        /* --- FOOTER DERECHO --- */
+        .login-footer-right {
+            text-align: center;
+            font-size: 0.95rem;
+            color: var(--color-text-muted);
+            margin-top: 30px;
+        }
+        .login-footer-right a {
+            color: var(--color-primary-red);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .login-footer-right a:hover {
+            color: #B71C1C;
+        }
+        
+        /* --- MENSAJES FLASH (Mejorados) --- */
+        .flashes {
+            list-style: none;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .flashes li.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .flashes li.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        /* --- RESPONSIVE (Móvil) --- */
+        @media (max-width: 768px) {
+            .login-container {
+                flex-direction: column;
+                width: 95%;
+                margin: 20px auto;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            }
+            
+            .login-left {
+                width: 100%;
+                order: 2; /* Mueve la ilustración abajo en móvil */
+                padding: 20px;
+            }
+            
+            .login-right {
+                width: 100%;
+                padding: 30px;
+                order: 1; /* Mueve el formulario arriba en móvil */
+            }
+            
+            .login-form-area h2 {
+                text-align: center;
+                border-left: none;
+                padding-left: 0;
+                margin-bottom: 20px;
+            }
+            
+            .imagen-decorativa-login {
+                max-width: 200px;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
 
 <div class="login-container">
     {# Columna Izquierda: Logo, Ilustración Roja #}
     <div class="login-left">
         <div class="brand-logo">
-            {# 1. IMAGEN DEL LOGO (Los doctores) #}
-            {# <span>INSTITUCIÓN SALUD</span> #}
+            {# Puedes añadir un logo de texto si lo tienes #}
         </div>
         
-        {# 2. LA NUEVA IMAGEN DECORATIVA AÑADIDA AQUÍ #}
+        {# La IMAGEN DECORATIVA AÑADIDA AQUÍ #}
         <div class="imagen-decorativa-container">
              <img src="{{ url_for('static', filename='assets/img/2222.jpg') }}" 
-                  alt="Ilustración Decorativa" 
-                  class="imagen-decorativa-login">
+                 alt="Ilustración de Profesionales de Salud" 
+                 class="imagen-decorativa-login">
         </div>
         
         <div class="footer-left">
-            <p>&copy; 2024 Institución de Salud</p>
+            <p>&copy; 2025 Institución de Salud</p>
         </div>
     </div>
 
@@ -34,33 +234,27 @@
             {# Bloque de Mensajes Flash #}
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
-                    {# CRÍTICO: Añadimos la clase 'flash-message-area' para JS #}
-                    <div class="flashes flash-message-area"> 
+                    <ul class="flashes flash-message-area"> 
                         {% for category, message in messages %}
-                            {# La categoría 'success' es el mensaje de cierre de sesión #}
                             <li class="{{ category }}">{{ message }}</li>
                         {% endfor %}
-                    </div>
+                    </ul>
                 {% endif %}
             {% endwith %}
 
             {# -------- SCRIPT PARA OCULTAR MENSAJES AUTOMÁTICAMENTE -------- #}
             <script>
-                // Buscamos el contenedor principal de los mensajes flash
                 const flashArea = document.querySelector('.flash-message-area');
                 
-                // Si encontramos el área de mensajes y tiene contenido (el mensaje verde)
                 if (flashArea && flashArea.children.length > 0) {
-                    // La función setTimeout oculta el contenedor después de 5 segundos
                     setTimeout(() => {
-                        // Usamos fadeOut o simplemente ocultamos si no tienes una librería como jQuery.
-                        // Para JS puro:
-                        flashArea.style.display = 'none'; 
-                        
-                        // Si quieres una animación de "fade-out", tendrías que usar CSS transitions.
-                        // Por simplicidad, usamos display: none.
-                        
-                    }, 5000); // 5000 milisegundos = 5 segundos
+                        flashArea.style.opacity = '0';
+                        setTimeout(() => {
+                            flashArea.style.display = 'none';
+                        }, 500); // Espera que la transición termine
+                    }, 5000); 
+                    // Añadimos la transición CSS para fade out
+                    flashArea.style.transition = 'opacity 0.5s ease-out';
                 }
             </script>
             {# ---------------------------------------------------------------- #}
@@ -73,20 +267,16 @@
                 <div class="mb-3">
                     <label for="password" class="form-label">Contraseña</label>
                     <input type="password" class="form-control" id="password" name="password" placeholder="Ingresa tu contraseña" required>
-                    {# Texto de Olvidaste contraseña #}
-                     
                 </div>
-                <button type="submit" class="btn-primary login-button">Iniciar Sesión</button>
+                <button type="submit" class="login-button">Iniciar Sesión</button>
             </form>
             
             <div class="register-link">
-                {# Texto de Registrarme Ahora #}
-                
+                {# Puedes añadir un link de "Registrarme" o "Recuperar contraseña" aquí si es necesario #}
             </div>
         </div>
         
         <div class="login-footer-right">
-            {# Textos de Términos y Contacto #}
             <a href="#" class="terms-link">Términos y Servicios</a>
             <p>¿Necesitas ayuda? <a href="mailto:soporte@tuintitucion.com">Contáctanos</a></p>
         </div>

@@ -1,8 +1,27 @@
-{# templates/base_paciente.html #}
-
-{# CRÍTICO: Este archivo debe extender a base_simple.html. #}
-{# Asumimos que base_simple.html está en la misma ubicación (raíz de templates/). #}
 {% extends 'base_simple.html' %} 
+
+{% block head %}
+    {{ super() }}
+    <style>
+        /* Aplicamos estilos para asegurar que la tarjeta de flujo del paciente
+           se posicione y se vea limpia, anulando estilos de login heredados (como fondos rojos o anchos pequeños). */
+        .patient-flow-card {
+            /* Anular cualquier restricción de ancho que venga de un contenedor padre */
+            max-width: 100% !important; 
+            width: 100% !important;
+            padding: 0;
+            margin: 0;
+            /* Forzar el fondo a ser transparente para que el body defina el color base,
+               y la tarjeta interna (como .main-card en ingreso_resultado.html) defina el color blanco. */
+            background: transparent !important; 
+            border: none !important;
+            box-shadow: none !important;
+            /* Centrar el contenido de la tarjeta */
+            display: flex;
+            justify-content: center;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
     {# Este contenedor asegura que el contenido del paciente esté centrado #}

@@ -1,5 +1,3 @@
-# routes/auth.py
-
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
 from database.connection import execute_query
 
@@ -17,7 +15,7 @@ def login():
         
         if user_data:
             # --- CRÍTICO: VERIFICACIÓN DE CONTRASEÑA CORRECTA ---
-            # Aseguramos que ambos sean strings limpios para la comparación exitosa.
+            # Se asegura que ambos sean strings limpios para la comparación exitosa.
             db_password = str(user_data['password']).strip()
             
             if db_password == password_input:

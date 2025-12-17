@@ -34,9 +34,8 @@ def acceso_qr(qr_codigo):
     paciente_id = qr_data.get('paciente_id')
     resultado_paciente = qr_data.get('resultado')
     
-    # ------------------------------------------------------------------
-    # 🟢 LÓGICA DE REDIRECCIÓN DUAL
-    # ------------------------------------------------------------------
+  
+    #LÓGICA DE REDIRECCIÓN
 
     # A. ESCENARIO DE VINCULACIÓN (ENFERMERO)
     # Si el QR está 'Generado' (es nuevo), redirigir al formulario del ENFERMERO.
@@ -67,9 +66,9 @@ def acceso_qr(qr_codigo):
     return redirect(url_for('auth_bp.login'))
 
 
-# -------------------------------------------------------------------
+
 # --- 2. MOTOR DE NAVEGACIÓN (Controla las etapas) ---
-# -------------------------------------------------------------------
+
 @paciente_bp.route('/flujo')
 def control_flujo_paciente():
     """Controla la navegación del paciente a través de las diferentes etapas."""
@@ -97,9 +96,9 @@ def control_flujo_paciente():
     return render_template(template_name)
 
 
-# -------------------------------------------------------------------
+
 # --- 3. FUNCIÓN PARA AVANZAR EN EL FLUJO (Botón 'Siguiente') ---
-# -------------------------------------------------------------------
+
 @paciente_bp.route('/siguiente')
 def siguiente_paso():
     """Avanza a la siguiente etapa en el flujo del paciente."""
@@ -126,9 +125,9 @@ def siguiente_paso():
         return redirect(url_for('auth_bp.login'))
 
 
-# -------------------------------------------------------------------
+
 # --- 4. RUTA PARA GUARDAR EL CUESTIONARIO Y AVANZAR ---
-# -------------------------------------------------------------------
+
 @paciente_bp.route('/guardar_cuestionario', methods=['POST'])
 def guardar_cuestionario():
     """Guarda las respuestas del cuestionario y avanza a la siguiente etapa (ingreso_resultado)."""
@@ -138,17 +137,14 @@ def guardar_cuestionario():
         flash("Sesión no válida.", "danger")
         return redirect(url_for('auth_bp.login'))
 
-    # 🚨 LÓGICA DE GUARDADO DE RESPUESTAS AQUÍ 🚨
-    # En un proyecto real, aquí guardarías las respuestas del cuestionario
-    # -----------------------------------------------
+    # LÓGICA DE GUARDADO DE RESPUESTAS AQUÍ 
 
     flash("Respuestas del cuestionario guardadas. Continúe con el autodiagnóstico.", "info")
     return redirect(url_for('paciente_bp.siguiente_paso'))
 
 
-# -------------------------------------------------------------------
 # --- 5. RUTA PARA GUARDAR EL RESULTADO DE LA AUTOPRUEBA ---
-# -------------------------------------------------------------------
+
 @paciente_bp.route('/guardar_resultado', methods=['POST'])
 def guardar_resultado():
     """Guarda el resultado de la autoprueba (Positivo/Negativo) y redirige a la página final."""
@@ -183,9 +179,8 @@ def guardar_resultado():
         return redirect(url_for('auth_bp.login'))
 
 
-# -------------------------------------------------------------------
-# --- 6. RUTA PARA MOSTRAR LA PANTALLA FINAL DE RESULTADOS/RECOMENDACIONES (RENOMBRADA) ---
-# -------------------------------------------------------------------
+# --- 6. RUTA PARA MOSTRAR LA PANTALLA FINAL DE RESULTADOS/RECOMENDACIONES 
+
 @paciente_bp.route('/resultados')
 def mostrar_resultados():
     """Muestra la página de resultados y recomendaciones (Positivo/Negativo)."""
@@ -210,9 +205,9 @@ def mostrar_resultados():
                             clase_resultado=clase)
 
 
-# -------------------------------------------------------------------
-# --- 7. RUTA FINAL DEL PROCESO (PÁGINA DE CIERRE REFORZADO) ---
-# -------------------------------------------------------------------
+
+# --- 7. RUTA FINAL DEL PROCESo
+
 @paciente_bp.route('/fin_proceso')
 def fin_proceso():
     """Página final a la que se redirige el paciente. Contiene solo un mensaje de cierre."""
@@ -221,9 +216,9 @@ def fin_proceso():
     return render_template('paciente/fin_proceso.html')
 
 
-# -------------------------------------------------------------------
+
 # --- 8. RUTA DE CIERRE DE SESIÓN (OBSOLETA, USAR /fin_proceso) ---
-# -------------------------------------------------------------------
+
 @paciente_bp.route('/cerrar_sesion_final')
 def cerrar_sesion_final():
     """Ruta obsoleta, redirigida a fin_proceso."""

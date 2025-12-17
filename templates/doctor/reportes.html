@@ -6,15 +6,15 @@
 <style>
     /* Estilos generales y variables para este reporte */
     :root {
-        --color-primario: #D32F2F; /* Rojo principal de la app */
-        --color-secundario: #F98F1D; /* Naranja/Amarillo para énfasis */
-        --color-fondo-claro: #ECF0F1; 
+        --color-primario: #D32F2F; /* Rojo principal de la app (Botón, bordes) */
+        --color-secundario: #007bff; /* Azul moderno para énfasis/descarga */
+        --color-fondo-claro: #F4F6F9; /* Fondo muy claro para contraste */
         --color-tarjeta-fondo: #FFFFFF;
-        --color-texto-oscuro: #2C3E50;
-        --color-texto-claro: #7F8C8D;
-        --color-exito: #2ECC71; /* Verde */
-        --color-alerta: #E74C3C; /* Rojo */
-        --color-info: #3498DB; /* Azul para info/descarga */
+        --color-texto-oscuro: #212529; /* Casi negro, muy legible */
+        --color-texto-claro: #6c757d; /* Gris suave para descripciones */
+        --color-exito: #28a745; /* Verde para Negativo (Bueno) */
+        --color-alerta: #dc3545; /* Rojo para Positivo (Alerta) */
+        --color-info: var(--color-secundario); /* Azul para info/descarga */
     }
 
     /* Contenedor y Títulos */
@@ -28,42 +28,68 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 25px;
+        margin-bottom: 10px;
         padding-bottom: 10px;
     }
     
     h1 {
         color: var(--color-texto-oscuro);
-        font-size: 2.2rem;
-        font-weight: 700;
+        font-size: 2.5rem; /* Más grande */
+        font-weight: 700; /* Extra bold */
         margin: 0; 
+        letter-spacing: -0.5px;
     }
 
     .description-text {
         color: var(--color-texto-claro);
         font-size: 1.1rem;
         margin-bottom: 30px;
+        font-weight: 400;
     }
 
     /* Estilo para el botón de Descarga */
     .download-link {
         display: inline-flex;
         align-items: center;
-        padding: 10px 20px;
-        background-color: var(--color-info); /* Azul para descarga */
+        padding: 12px 25px; /* Más padding */
+        background-color: var(--color-secundario); 
         color: var(--color-tarjeta-fondo);
         text-decoration: none;
         border-radius: 8px;
         font-weight: 600;
-        transition: background-color 0.3s ease;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: background-color 0.3s ease, transform 0.1s;
+        box-shadow: 0 4px 10px rgba(0, 123, 255, 0.3); /* Sombra azul más definida */
     }
     .download-link:hover {
-        background-color: #2980B9; /* Un azul más oscuro para el hover */
-        color: white; /* Mantener texto blanco */
+        background-color: #0056b3; 
+        transform: translateY(-1px);
     }
     .download-link i {
         margin-right: 8px;
+    }
+    
+    /* Contenedor de Filtros y Botones */
+    .filter-actions-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 30px; /* Más espacio */
+        padding: 15px 0;
+    }
+    .campaign-filter-select, .age-filter-select {
+        padding: 10px 15px;
+        border-radius: 8px;
+        border: 1px solid #ced4da;
+        font-size: 1rem;
+        background-color: var(--color-tarjeta-fondo);
+        color: var(--color-texto-oscuro);
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .campaign-filter-container label {
+        font-weight: 500; /* Más sutil */
+        color: var(--color-texto-oscuro);
+        margin-right: 15px;
     }
 
 
@@ -71,37 +97,65 @@
     .report-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-        gap: 25px;
+        gap: 30px; /* Más separación entre tarjetas */
         margin-top: 30px;
     }
 
-    /* Estilo general para Cajas de Métrica y Gráficas */
+    /* Estilo general para Cajas de Métrica y Gráficas (Soft UI Style) */
     .chart-box, .metric-box {
         background: var(--color-tarjeta-fondo);
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        padding: 30px; /* Más relleno */
+        border-radius: 12px; /* Más redondeado */
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Sombra más pronunciada pero suave */
         border-left: 5px solid var(--color-primario);
         transition: transform 0.2s ease-in-out;
     }
+    .metric-box:hover, .chart-box:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 30px rgba(0,0,0,0.2);
+    }
 
-    /* Estilos del encabezado de la gráfica de Edad */
-    .chart-box h3 {
+    .chart-box {
+        border-left: 5px solid var(--color-secundario); /* Borde azul para gráficas */
+    }
+
+    /* Encabezados de Tarjeta */
+    .metric-box h3, .chart-box h3 {
         color: var(--color-texto-oscuro);
-        font-size: 1.4rem;
-        margin-bottom: 15px;
-        border-bottom: 1px solid var(--color-fondo-claro);
+        font-size: 1.3rem;
+        font-weight: 600; /* Semi-bold */
+        margin-bottom: 5px;
+        border-bottom: 1px solid #e9ecef; /* Línea de separación suave */
         padding-bottom: 10px;
-        
-        /* Alineación del filtro y título */
         display: flex; 
-        justify-content: space-between;
         align-items: center;
     }
+    .metric-box h3 i, .chart-box h3 i {
+        color: var(--color-primario);
+        margin-right: 10px;
+    }
+    .chart-box h3 i {
+         color: var(--color-secundario);
+    }
     
+    /* Valor de la Métrica Principal */
+    .metric-value {
+        font-size: 3.5rem; /* Más grande para impacto */
+        font-weight: 800; /* Extra bold */
+        color: var(--color-texto-oscuro);
+        margin-top: 10px;
+        margin-bottom: 5px;
+        line-height: 1;
+    }
+    .metric-label {
+        color: var(--color-texto-claro);
+        font-size: 0.95rem;
+        margin-top: 5px;
+    }
+
     /* Contenedor del canvas para asegurar el tamaño de la gráfica */
     .chart-container {
-        height: 300px;
+        height: 350px; /* Reducimos la altura ligeramente para mejor vista */
         position: relative;
         margin-top: 15px;
         padding-top: 15px;
@@ -109,8 +163,8 @@
 
     /* Estilo para los bloques de Positividad/Negatividad */
     .tasa-positividad, .tasa-negativa {
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-size: 2.2rem; /* Más grande que antes */
+        font-weight: 800;
         margin-top: 15px;
         padding: 10px 0;
     }
@@ -120,13 +174,25 @@
     .tasa-negativa {
         color: var(--color-exito); /* Verde para negatividad, que es el "buen" resultado */
     }
+    .total-evaluaciones {
+        color: var(--color-texto-claro);
+    }
+    .total-evaluaciones b {
+        color: var(--color-texto-oscuro);
+        font-weight: 700;
+    }
 
-    /* Estilos del selector de filtro */
-    .age-filter-select {
-        padding: 4px 8px;
-        border-radius: 5px;
-        border: 1px solid var(--color-border-light, #ccc);
-        font-size: 0.9rem;
+    /* Enlace de regreso */
+    .back-link {
+        color: var(--color-texto-claro) !important;
+        text-decoration: none;
+        font-weight: 500;
+        margin-top: 40px;
+        display: inline-block;
+        transition: color 0.3s;
+    }
+    .back-link:hover {
+        color: var(--color-secundario) !important;
     }
 
 
@@ -139,16 +205,19 @@
             flex-direction: column;
             align-items: flex-start;
         }
+        .filter-actions-container {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 15px;
+        }
         .download-link {
             width: 100%;
             justify-content: center;
-            margin-top: 15px;
+            margin-left: 0;
+            margin-top: 10px;
         }
         .report-grid {
             grid-template-columns: 1fr;
-        }
-        .metric-value {
-            font-size: 2.5rem;
         }
     }
 </style>
@@ -159,15 +228,47 @@
         <h1>
             <i class="fas fa-chart-bar"></i> Panel de Reportes Analíticos
         </h1>
-        
-        <a href="{{ url_for('doctor_bp.descargar_reporte_pdf') }}" class="download-link">
-            <i class="fas fa-file-pdf"></i> Descargar Reporte PDF
-        </a>
     </div>
 
     <p class="description-text">
         Análisis de datos clave de las campañas de autoprueba
     </p>
+    
+    {# --- FILTRO DE CAMPAÑA Y BOTÓN DE DESCARGA (Integración) --- #}
+    <form id="campaignFilterForm" method="GET" action="{{ url_for('doctor_bp.reportes') }}" style="margin: 0;">
+        <div class="filter-actions-container">
+            
+            <div class="campaign-filter-container">
+                <label for="campaignFilter">Filtrar por Campaña:</label>
+                <select id="campaignFilter" name="campana_id" class="campaign-filter-select" onchange="document.getElementById('campaignFilterForm').submit()">
+                    
+                    {# Opción por defecto para mostrar todos #}
+                    <option value="" {% if not request.args.get('campana_id') %}selected{% endif %}>Mostrar Todas las Campañas</option>
+                    
+                    {# Itera sobre las campañas disponibles #}
+                    {% for campana in campanas_disponibles %}
+                        <option value="{{ campana.numero_campana }}" 
+                                {% if request.args.get('campana_id') == campana.numero_campana %}selected{% endif %}>
+                            Campaña {{ campana.numero_campana }} ({{ campana.total_qrs }} QRs)
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            {# Muestra la campaña seleccionada si hay filtro #}
+             {% if request.args.get('campana_id') %}
+            <span style="font-size: 0.95rem; color: var(--color-primario); font-weight: 600;">
+                Reporte actual filtrado por Campaña {{ request.args.get('campana_id') }}
+            </span>
+             {% endif %}
+            
+            {# El botón de descarga incluye el parámetro campana_id de la URL #}
+            <a href="{{ url_for('doctor_bp.descargar_reporte_pdf', campana_id=request.args.get('campana_id')) }}" class="download-link">
+                 <i class="fas fa-file-pdf"></i> Descargar Reporte PDF
+            </a>
+        </div>
+    </form>
+
 
     <div class="report-grid">
         <div class="metric-box">
@@ -176,13 +277,13 @@
             <p class="metric-label">Total de códigos QR emitidos.</p>
         </div>
 
-        <div class="metric-box">
+        <div class="metric-box" style="border-left: 5px solid var(--color-secundario);">
             <h3><i class="fas fa-link"></i> Códigos Vinculados</h3>
             <p class="metric-value">{{ metricas.codigos_vinculados if metricas and metricas.codigos_vinculados is not none else 'N/A' }}</p>
             <p class="metric-label">Códigos asociados a un paciente.</p>
         </div>
 
-        <div class="metric-box">
+        <div class="metric-box" style="border-left: 5px solid var(--color-exito);">
             <h3><i class="fas fa-check-circle"></i> Evaluaciones Finalizadas</h3>
             <p class="metric-value">{{ metricas.total_evaluaciones if metricas and metricas.total_evaluaciones is not none else 'N/A' }}</p>
             <p class="metric-label">Total de pruebas completadas.</p>
@@ -191,22 +292,22 @@
     
     <div class="report-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); margin-top: 40px;">
         
-        <div class="metric-box">
+        <div class="metric-box" style="border-left: 5px solid var(--color-alerta);">
             <h3><i class="fas fa-viruses"></i> Tasa de Positividad</h3>
             <p class="tasa-positividad">{{ "{:.1f}%".format(metricas.tasa_positividad) if metricas and metricas.tasa_positividad is not none else 'N/A' }}</p>
-            <p class="total-evaluaciones">Basado en **{{ metricas.total_evaluaciones if metricas and metricas.total_evaluaciones is not none else '0' }}** evaluaciones.</p>
-            <p class="metric-label" style="margin-top: 15px; color: var(--color-alerta);">Casos Positivos: **{{ metricas.casos_positivos if metricas and metricas.casos_positivos is not none else '0' }}**</p>
+            <p class="total-evaluaciones">Basado en <b>{{ metricas.total_evaluaciones if metricas and metricas.total_evaluaciones is not none else '0' }}</b> evaluaciones.</p>
+            <p class="metric-label" style="margin-top: 15px; color: var(--color-alerta);">Casos Positivos: <b>{{ metricas.casos_positivos if metricas and metricas.casos_positivos is not none else '0' }}</b></p>
         </div>
 
-        <div class="metric-box">
+        <div class="metric-box" style="border-left: 5px solid var(--color-exito);">
             <h3><i class="fas fa-shield-alt"></i> Tasa de Negatividad</h3>
             <p class="tasa-negativa">{{ "{:.1f}%".format(metricas.tasa_negativa) if metricas and metricas.tasa_negativa is not none else 'N/A' }}</p>
-            <p class="total-evaluaciones">Pruebas **Negativas:** **{{ metricas.casos_negativos if metricas and metricas.casos_negativos is not none else '0' }}**</p>
+            <p class="total-evaluaciones">Pruebas Negativas: <b>{{ metricas.casos_negativos if metricas and metricas.casos_negativos is not none else '0' }}</b></p>
             <p class="metric-label" style="margin-top: 15px;">**Nota:** Una alta tasa negativa es un buen indicador de salud poblacional.</p>
         </div>
     </div>
 
-    <div class="chart-box" style="margin-top: 40px; border-left: 5px solid var(--color-secundario);">
+    <div class="chart-box" style="margin-top: 40px;">
         <h3><i class="fas fa-venus-mars"></i> Distribución de Pacientes (Sexo)</h3>
         <div class="chart-container">
             <p id="noDataSexo" style="text-align: center; color: var(--color-texto-claro); font-style: italic; display: none; padding-top: 100px;">
@@ -216,7 +317,7 @@
         </div>
     </div>
 
-    <div class="chart-box" style="margin-top: 25px; border-left: 5px solid var(--color-secundario);">
+    <div class="chart-box" style="margin-top: 30px;">
         
         <h3 class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
@@ -262,19 +363,25 @@ document.addEventListener('DOMContentLoaded', function() {
         // PARSEO ROBUSTO DEL JSON INYECTADO DESDE FLASK
         metricasData = JSON.parse('{{ metricas_json | safe }}');
     } catch (e) {
-        // Si hay un error de parseo (e.g., el JSON es nulo o inválido), lo registramos.
         console.error("Error al parsear metricas_json. JSON devuelto:", '{{ metricas_json | safe }}', e);
         metricasData = {};
     }
 
-    // --- Lógica de preselección del filtro desde la URL ---
-    // Esto asegura que si la página se recarga con un filtro, el select lo refleje.
+    // --- Lógica de preselección del filtro de Campaña (CRÍTICO: Asegura que el filtro se mantenga) ---
+    const campanaFilterElement = document.getElementById('campaignFilter');
     const urlParams = new URLSearchParams(window.location.search);
+    const selectedCampaignId = urlParams.get('campana_id');
+    
+    if (campanaFilterElement && selectedCampaignId) {
+        campanaFilterElement.value = selectedCampaignId;
+    }
+
+
+    // --- Lógica de preselección del filtro de Rango de Edad desde la URL ---
     const selectedRange = urlParams.get('rango_edad');
     if (selectedRange) {
         const selectElement = document.getElementById('rangoEdadFilter');
         if (selectElement) {
-            // Asegura que la opción correcta se muestre como seleccionada
             selectElement.value = selectedRange;
         }
     }
@@ -297,11 +404,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const totalSexo = sexoData.reduce((a, b) => a + b, 0);
 
         if (totalSexo === 0) {
-            sexoChartElement.style.display = 'none'; // Oculta el canvas
-            if (noDataSexoElement) noDataSexoElement.style.display = 'block'; // Muestra el mensaje
+            sexoChartElement.style.display = 'none'; 
+            if (noDataSexoElement) noDataSexoElement.style.display = 'block'; 
         } else {
-            sexoChartElement.style.display = 'block'; // Muestra el canvas
-            if (noDataSexoElement) noDataSexoElement.style.display = 'none'; // Oculta el mensaje
+            sexoChartElement.style.display = 'block'; 
+            if (noDataSexoElement) noDataSexoElement.style.display = 'none'; 
 
             const ctxSexo = sexoChartElement.getContext('2d');
             new Chart(ctxSexo, {
@@ -361,24 +468,21 @@ document.addEventListener('DOMContentLoaded', function() {
         let dataToDisplay = Object.values(metricasData.distribucion_edad);
         
         // 🚨 Lógica para filtrar los datos si se seleccionó un rango
-        if (selectedRange && selectedRange !== "") {
-             // Solo mostramos el rango seleccionado
-             const totalCases = metricasData.distribucion_edad[selectedRange] || 0;
-             
-             // Si el caso seleccionado no tiene datos, mostramos una barra de 0.
-             labelsToDisplay = [selectedRange];
-             dataToDisplay = [totalCases];
+        if (selectedRange && selectedRange !== "" && selectedRange in metricasData.distribucion_edad) {
+              const totalCases = metricasData.distribucion_edad[selectedRange];
+              labelsToDisplay = [selectedRange];
+              dataToDisplay = [totalCases];
         }
 
         const totalEdad = dataToDisplay.reduce((a, b) => a + b, 0);
 
         // Lógica de control de visibilidad: si no hay datos, muestra el mensaje de diagnóstico.
-        if (totalEdad === 0 && !selectedRange) { // Si el total es 0 Y no hay filtro activo
-            edadChartElement.style.display = 'none'; // Oculta el canvas
-            if (noDataEdadElement) noDataEdadElement.style.display = 'block'; // Muestra el mensaje
+        if (totalEdad === 0 && (!selectedRange || selectedRange === "")) { 
+            edadChartElement.style.display = 'none'; 
+            if (noDataEdadElement) noDataEdadElement.style.display = 'block'; 
         } else {
-            edadChartElement.style.display = 'block'; // Muestra el canvas
-            if (noDataEdadElement) noDataEdadElement.style.display = 'none'; // Oculta el mensaje
+            edadChartElement.style.display = 'block'; 
+            if (noDataEdadElement) noDataEdadElement.style.display = 'none'; 
         
             const ctxEdad = edadChartElement.getContext('2d');
             new Chart(ctxEdad, {
@@ -400,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         legend: { display: false },
                         tooltip: {
                             callbacks: {
-                                 label: function(context) {
+                                label: function(context) {
                                     let label = context.dataset.label || '';
                                     if (label) {
                                         label += ': ';

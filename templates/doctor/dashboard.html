@@ -2,13 +2,12 @@
 
 {% block title %}Dashboard Doctor{% endblock %}
 
-{# ================================================================= #}
-{# BLOQUE PARA LA NUEVA BARRA SUPERIOR (TOP SIDEBAR)                 #}
+{# BLOQUE PARA LA NUEVA BARRA SUPERIOR (TOP SIDEBAR)                 #
 {# Esto sobrescribe el contenido por defecto en el bloque de base.html #}
-{# ================================================================= #}
+
 {% block top_header_content %}
     <h3 class="top-header-title">Panel del Doctor</h3>
-    <p class="top-header-subtitle">Bienvenido, {{ session.get('username', 'Doctor') }}. Revise el estado general del sistema.</p>
+    
 {% endblock %}
 {# ================================================================= #}
 

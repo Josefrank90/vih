@@ -1,5 +1,3 @@
-# utils/auth.py
-
 from functools import wraps
 from flask import session, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash # Importación correcta
@@ -12,7 +10,7 @@ def hash_password(password):
 
 def check_hashed_password(hashed_password, password):
     """Verifica si la contraseña coincide con el hash."""
-    # Asegúrate de que werkzeug.security esté importado arriba
+    
     return check_password_hash(hashed_password, password)
 
 # --- Constantes de Roles (Basado en tu tabla 'rol') ---
@@ -59,5 +57,3 @@ def role_required(required_role_id):
 # Decoradores específicos para cada rol
 doctor_required = role_required(ROL_DOCTOR)
 enfermero_required = role_required(ROL_ENFERMERO)
-
-# NOTA: Asegúrate de tener un archivo __init__.py vacío dentro de la carpeta 'utils/'

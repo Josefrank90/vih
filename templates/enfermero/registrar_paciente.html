@@ -2,15 +2,191 @@
 
 {% block title %}Vincular QR y Registrar Paciente{% endblock %}
 
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    /* --- VARIABLES DE DISEÑO --- */
+    :root {
+        --color-primary-red: #D32F2F; /* Rojo principal de la aplicación */
+        --color-success-green: #28a745; /* Verde para éxito/registro */
+        --color-background: #F4F6F9; /* Fondo muy claro */
+        --color-card-bg: #FFFFFF;
+        --color-text-dark: #212529;
+        --color-text-muted: #6c757d;
+        --color-border-light: #ced4da;
+        --color-disabled-bg: #EAECEE;
+    }
+
+    /* --- ESTILOS ESTRUCTURALES GENERALES --- */
+    body {
+        background-color: var(--color-background);
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    }
+
+    .dashboard-section {
+        border-radius: 12px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        background-color: var(--color-card-bg);
+        padding: 40px;
+        margin: 20px auto;
+        /* Aumentamos el ancho máximo AÚN MÁS para anular cualquier restricción de la plantilla base */
+        max-width: 1200px; 
+        width: 90%; /* Tomar la mayor parte del ancho disponible */
+        border-left: 5px solid var(--color-primary-red);
+        box-sizing: border-box;
+    }
+
+    /* --- TÍTULOS --- */
+    .card-title, .form-grid h2 {
+        color: var(--color-text-dark);
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 5px;
+        border-bottom: 2px solid #e9ecef;
+        padding-bottom: 10px;
+        grid-column: 1 / -1; 
+    }
+    .form-grid h2 {
+        font-size: 1.4rem;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+
+    /* --- MENSAJES DE ALERTA --- */
+    .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 1rem;
+        font-weight: 500;
+    }
+    .alert-info {
+        background-color: #e0f7fa; 
+        color: #00796b;
+        border: 1px solid #4db6ac;
+        font-weight: 600;
+        text-align: center;
+    }
+    .alert-info i {
+        margin-right: 8px;
+    }
+
+    /* --- FORMULARIO GRID (2 Columnas Robusto) --- */
+    
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Base de 2 COLUMNAS en PC/Tableta Grande */
+        gap: 25px 35px; 
+        margin-top: 20px;
+    }
+
+    /* Contenedor de cada campo: la etiqueta y el input van juntos */
+    .field-group {
+        display: flex;
+        flex-direction: column; /* Etiqueta encima del input */
+    }
+
+    /* Estilo de la etiqueta (Arriba del campo) */
+    .form-grid label {
+        margin-bottom: 5px;
+        font-weight: 600;
+        color: var(--color-text-dark);
+        font-size: 0.95rem;
+    }
+
+    /* Estilo del input/select (ancho completo dentro del field-group) */
+    .form-grid input:not([type="submit"]), 
+    .form-grid select {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--color-border-light);
+        border-radius: 8px;
+        font-size: 1rem;
+        color: var(--color-text-dark);
+        background-color: var(--color-card-bg);
+        transition: border-color 0.3s, box-shadow 0.3s;
+        box-sizing: border-box;
+    }
+
+    /* CLASES DE COLUMNA PARA PC/TABLETA */
+    
+    /* Por defecto, todos los field-groups ocupan 1 columna, creando 2 columnas por fila. */
+    .field-group {
+        grid-column: span 1; 
+    }
+    
+    /* Para campos que deben abarcar todo el ancho (Ocupación, Títulos, Botón) */
+    .full-width-field {
+        grid-column: 1 / -1;
+    }
+    
+    /* --- MANEJO DE FOCUS Y DISABLED --- */
+    .form-grid input:focus, 
+    .form-grid select:focus {
+        border-color: var(--color-primary-red);
+        box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.1);
+        outline: none;
+    }
+    
+    .form-grid input:disabled, 
+    .form-grid select:disabled {
+        background-color: var(--color-disabled-bg);
+        color: var(--color-text-muted);
+        cursor: not-allowed;
+    }
+
+    /* --- BOTÓN DE ENVÍO --- */
+    .btn-success {
+        grid-column: 1 / -1; 
+        background-color: var(--color-success-green);
+        color: white;
+        padding: 15px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: background-color 0.3s, transform 0.1s;
+        margin-top: 20px;
+    }
+    .btn-success:hover {
+        background-color: #1e7e34;
+        transform: translateY(-1px);
+    }
+    
+    /* --- RESPONSIVE (Móvil y Tableta Pequeña) --- */
+    @media (max-width: 768px) {
+        .dashboard-section {
+            padding: 20px;
+            margin: 10px auto;
+        }
+        .form-grid {
+            grid-template-columns: 1fr; /* Una sola columna en móvil */
+            gap: 15px;
+        }
+        /* En móvil, todos los elementos deben ocupar 1 columna */
+        .field-group {
+            grid-column: span 1 !important;
+        }
+        .full-width-field {
+             grid-column: span 1 !important;
+        }
+    }
+
+</style>
+{% endblock %}
+
 {% block content %}
 
 {% if error %}
-    <div class="alert alert-danger" role="alert">
+    <div class="alert alert-danger full-width-field" role="alert">
         <strong>Error de Código QR:</strong> No se puede registrar un paciente con este código.
         <br>Por favor, escanee un código QR **nuevo y sin usar**.
     </div>
 {% elif advertencia_vinculado %}
-    <div class="alert alert-warning" role="alert">
+    <div class="alert alert-warning full-width-field" role="alert">
         <strong>Advertencia:</strong> Este código QR (<strong>{{ codigo_qr }}</strong>) ya se encuentra **vinculado** a un paciente. No se permite un nuevo registro.
     </div>
 {% endif %}
@@ -19,91 +195,119 @@
 <div class="dashboard-section card p-4 mb-4">
     <h3 class="card-title">Registrar Paciente y Vincular QR</h3>
     
-
     <div class="alert alert-info">
-        Código QR a Vincular: <strong>{{ codigo_qr }}</strong>
+        <i class="fas fa-qrcode"></i> Código QR a Vincular: <strong>{{ codigo_qr }}</strong>
     </div>
 
     <div class="form-container">
-        <form method="POST" action="{{ url_for('enfermero_bp.vincular_con_codigo', codigo=codigo_qr) }}">
+        {# La estructura ahora usa DIVs .field-group con clases full-width-field o ninguna para definir la cuadrícula #}
+        <form method="POST" action="{{ url_for('enfermero_bp.vincular_con_codigo', codigo=codigo_qr) }}" class="form-grid">
             
-            <h2>Datos del Paciente</h2>
+            <h2 class="full-width-field">Datos Personales</h2>
             
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" required 
-                    value="{{ form_data.nombre if form_data else '' }}" 
-                    {% if advertencia_vinculado or error %}disabled{% endif %}>
+            {# --- FILA 1: Nombre, Apellido P (2 columnas) --- #}
+            <div class="field-group">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" required 
+                        value="{{ form_data.nombre if form_data else '' }}" 
+                        {% if advertencia_vinculado or error %}disabled{% endif %}>
+            </div>
 
-            <label for="apellido_paterno">Apellido Paterno:</label>
-            <input type="text" id="apellido_paterno" name="apellido_paterno" required
-                    value="{{ form_data.apellido_paterno if form_data else '' }}"
-                    {% if advertencia_vinculado or error %}disabled{% endif %}>
-
-            <label for="apellido_materno">Apellido Materno:</label>
-            <input type="text" id="apellido_materno" name="apellido_materno" 
-                    value="{{ form_data.apellido_materno if form_data else '' }}"
-                    {% if advertencia_vinculado or error %}disabled{% endif %}>
-
-            <label for="edad">Edad:</label>
-            <input type="number" id="edad" name="edad" required min="1" max="120"
-                    value="{{ form_data.edad if form_data else '' }}"
-                    {% if advertencia_vinculado or error %}disabled{% endif %}>
-
-            <label for="sexo">Sexo:</label>
-            <select id="sexo" name="sexo" required {% if advertencia_vinculado or error %}disabled{% endif %}>
-                <option value="">Seleccione</option>
-                <option value="Masculino" {% if form_data and form_data.sexo == 'Masculino' %}selected{% endif %}>Masculino</option>
-                <option value="Femenino" {% if form_data and form_data.sexo == 'Femenino' %}selected{% endif %}>Femenino</option>
-                <option value="Otro" {% if form_data and form_data.sexo == 'Otro' %}selected{% endif %}>Otro</option>
-            </select>
+            <div class="field-group">
+                <label for="apellido_paterno">Apellido Paterno:</label>
+                <input type="text" id="apellido_paterno" name="apellido_paterno" required
+                        value="{{ form_data.apellido_paterno if form_data else '' }}"
+                        {% if advertencia_vinculado or error %}disabled{% endif %}>
+            </div>
             
-            <label for="telefono">Teléfono:</label>
-            <input type="text" id="telefono" name="telefono" 
-                    value="{{ form_data.telefono if form_data else '' }}"
-                    {% if advertencia_vinculado or error %}disabled{% endif %}>
+            {# --- FILA 2: Apellido M, Edad --- #}
+            <div class="field-group">
+                <label for="apellido_materno">Apellido Materno:</label>
+                <input type="text" id="apellido_materno" name="apellido_materno" 
+                        value="{{ form_data.apellido_materno if form_data else '' }}"
+                        {% if advertencia_vinculado or error %}disabled{% endif %}>
+            </div>
 
-            <label for="ocupacion">Ocupación:</label>
-            <input type="text" id="ocupacion" name="ocupacion" 
-                    value="{{ form_data.ocupacion if form_data else '' }}"
-                    {% if advertencia_vinculado or error %}disabled{% endif %}>
-                    
-            {# --- INICIO CAMPOS DE UBICACIÓN --- #}
+            <div class="field-group">
+                <label for="edad">Edad:</label>
+                <input type="number" id="edad" name="edad" required min="1" max="120"
+                        value="{{ form_data.edad if form_data else '' }}"
+                        {% if advertencia_vinculado or error %}disabled{% endif %}>
+            </div>
+
+            {# --- FILA 3: Sexo, Teléfono --- #}
+            <div class="field-group">
+                <label for="sexo">Sexo:</label>
+                <select id="sexo" name="sexo" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                    <option value="">Seleccione</option>
+                    <option value="Masculino" {% if form_data and form_data.sexo == 'Masculino' %}selected{% endif %}>Masculino</option>
+                    <option value="Femenino" {% if form_data and form_data.sexo == 'Femenino' %}selected{% endif %}>Femenino</option>
+                    <option value="Otro" {% if form_data and form_data.sexo == 'Otro' %}selected{% endif %}>Otro</option>
+                </select>
+            </div>
             
-            <label for="estado">Estado:</label>
-            <select id="estado" name="estado" required {% if advertencia_vinculado or error %}disabled{% endif %}>
-                <option value="">Seleccione un Estado</option>
-                {% for estado in estados %}
-                    <option value="{{ estado.id }}" {% if form_data and form_data.estado == estado.id %}selected{% endif %}>{{ estado.nombre }}</option>
-                {% endfor %}
-            </select>
+            <div class="field-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="text" id="telefono" name="telefono" 
+                        value="{{ form_data.telefono if form_data else '' }}"
+                        {% if advertencia_vinculado or error %}disabled{% endif %}>
+            </div>
 
-            <label for="municipio">Municipio:</label>
-            <select id="municipio" name="municipio" required {% if advertencia_vinculado or error %}disabled{% endif %}>
-                <option value="">Seleccione un Municipio</option>
-                {% for municipio in municipios %}
-                    <option data-estado="{{municipio.estado}}" value="{{ municipio.id }}" {% if form_data and form_data.municipio == municipio.id %}selected{% endif %}>{{ municipio.nombre }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="colonia">Colonia:</label>
-            <select id="colonia" name="colonia" required {% if advertencia_vinculado or error %}disabled{% endif %}>
-                <option value="">Seleccione una Colonia</option>
-                {% for colonia in colonias %}
-                    <option data-municipio="{{colonia.municipio}}" value="{{ colonia.id }}" data-cp="{{ colonia.codigo_postal }}" {% if form_data and form_data.colonia == colonia.id %}selected{% endif %}>{{ colonia.nombre }}</option>
-                {% endfor %}
-            </select>
-
-            <label for="codigo_postal">Código Postal:</label>
-            <input type="text" id="codigo_postal" name="codigo_postal" required 
-                   placeholder="Se auto-genera al seleccionar colonia" readonly
-                   value="{{ form_data.codigo_postal if form_data else '' }}"
-                   {% if advertencia_vinculado or error %}disabled{% endif %}>
+            {# --- FILA 4: Ocupación (FULL WIDTH) --- #}
+            <div class="field-group full-width-field">
+                <label for="ocupacion">Ocupación:</label>
+                <input type="text" id="ocupacion" name="ocupacion" 
+                        value="{{ form_data.ocupacion if form_data else '' }}"
+                        {% if advertencia_vinculado or error %}disabled{% endif %}>
+            </div>
             
-            {# --- FIN CAMPOS DE UBICACIÓN --- #}
+            <h2 class="full-width-field">Datos de Ubicación</h2>
+            
+            {# --- FILA 5: Estado, Municipio --- #}
+            <div class="field-group">
+                <label for="estado">Estado:</label>
+                <select id="estado" name="estado" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                    <option value="">Seleccione un Estado</option>
+                    {% for estado in estados %}
+                        <option value="{{ estado.id }}" {% if form_data and form_data.estado == estado.id %}selected{% endif %}>{{ estado.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <button type="submit" class="btn btn-success" 
+            <div class="field-group">
+                <label for="municipio">Municipio:</label>
+                <select id="municipio" name="municipio" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                    <option value="">Seleccione un Municipio</option>
+                    {% for municipio in municipios %}
+                        <option data-estado="{{municipio.estado}}" value="{{ municipio.id }}" {% if form_data and form_data.municipio == municipio.id %}selected{% endif %}>{{ municipio.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            {# --- FILA 6: Colonia, Código Postal --- #}
+            <div class="field-group">
+                <label for="colonia">Colonia:</label>
+                <select id="colonia" name="colonia" required {% if advertencia_vinculado or error %}disabled{% endif %}>
+                    <option value="">Seleccione una Colonia</option>
+                    {% for colonia in colonias %}
+                        <option data-municipio="{{colonia.municipio}}" value="{{ colonia.id }}" data-cp="{{ colonia.codigo_postal }}" {% if form_data and form_data.colonia == colonia.id %}selected{% endif %}>{{ colonia.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="field-group">
+                <label for="codigo_postal">Código Postal:</label>
+                <input type="text" id="codigo_postal" name="codigo_postal" required 
+                        placeholder="Se auto-genera al seleccionar colonia" readonly
+                        value="{{ form_data.codigo_postal if form_data else '' }}"
+                        {% if advertencia_vinculado or error %}disabled{% endif %}>
+            </div>
+            
+            
+            {# --- BOTÓN DE ENVÍO (FULL WIDTH) --- #}
+            <button type="submit" class="btn btn-success full-width-field" 
                     {% if advertencia_vinculado or error %}disabled{% endif %}>
-                Registrar y Vincular
+                <i class="fas fa-user-plus"></i> Registrar y Vincular
             </button>
         </form>
     </div>
@@ -196,33 +400,35 @@
         };
 
         // --- Event Listeners para la Cascada ---
+        // Verificación de si el formulario está deshabilitado por error/advertencia
+        const formDisabled = estadoSelect.disabled; 
+        
+        if (!formDisabled) {
+             estadoSelect.addEventListener('change', actualizarMunicipios);
+             municipioSelect.addEventListener('change', actualizarColonias);
+             coloniaSelect.addEventListener('change', actualizarCodigoPostal);
+        }
 
-        estadoSelect.addEventListener('change', actualizarMunicipios);
-        municipioSelect.addEventListener('change', actualizarColonias);
-        coloniaSelect.addEventListener('change', actualizarCodigoPostal);
 
         // --- Inicialización ---
 
         // Si hay datos previos cargados (form_data), debemos aplicar los filtros:
         const hasFormData = '{{ form_data | default(false) }}';
         if (hasFormData) {
-            // Esperamos un ciclo de vida para que los valores de Jinja sean establecidos por el navegador.
              setTimeout(() => {
-                // Forzamos la actualización de Municipios, lo que a su vez llama a Colonias y CP
-                actualizarMunicipios();
-                
-                // Si el municipio estaba seleccionado previamente, actualizamos las colonias basándonos en ese valor
-                if (municipioSelect.value) {
-                    actualizarColonias();
-                }
+                 // Forzamos la actualización de Municipios, lo que a su vez llama a Colonias y CP
+                 actualizarMunicipios();
+                 
+                 // Si el municipio estaba seleccionado previamente, actualizamos las colonias basándonos en ese valor
+                 if (municipioSelect.value) {
+                     actualizarColonias();
+                 }
 
-                // Aseguramos que el CP se rellene basado en la colonia seleccionada
-                actualizarCodigoPostal();
+                 // Aseguramos que el CP se rellene basado en la colonia seleccionada
+                 actualizarCodigoPostal();
              }, 50);
         } else {
              // Si no hay datos, inicializamos con los valores por defecto (es decir, sin filtrar)
-             // Esto asegura que la página cargue con todos los municipios y colonias disponibles
-             // antes de que el usuario interactúe.
              actualizarMunicipios(); 
              actualizarColonias();
         }

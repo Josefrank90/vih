@@ -4,193 +4,277 @@
 
 {% block head %}
     {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
     <style>
-        /* Variables y Colores */
+        /* --- VARIABLES DE COLOR --- */
         :root {
-            --color-primary-red: #D32F2F;
-            --color-success-green: #388E3C;
+            --color-primary-red: #D32F2F; 
+            --color-success-green: #388E3C; 
+            --color-text-dark: #212529;
             --color-text-muted: #6c757d;
-            --color-card-bg: #ffffff;
+            --color-card-bg: #FFFFFF;
+            
             --color-border-light: #e0e0e0;
+            --color-icon-bg-default: #EAECEE; 
         }
-
-        /* Estilos de Contenedor y Centrado */
+        
+        /* --- ESTILOS BASE Y CONTENEDOR (FORZADO) --- */
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #f8f9fa;
+            
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            min-height: 100vh !important;
+            margin: 0 !important;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; 
+            padding: 20px; 
         }
-        
-        .card {
-            max-width: 500px;
+        .main-card {
+            border: none;
+            border-radius: 25px; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15); /* Sombra suave */
+            background: var(--color-card-bg) !important; /*  fondo de la tarjeta a ser blanco */
+            max-width: 550px; 
             width: 100%;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            background-color: var(--color-card-bg);
-            box-sizing: border-box; /* Incluye padding en el ancho */
+            padding: 50px 40px; 
+            box-sizing: border-box;
+            text-align: center;
+            animation: fadeIn 0.5s ease-out;
+            z-index: 10; /* Asegura que esté por encima del fondo */
         }
 
-        /* Títulos y Texto */
-        h2 {
-            font-weight: 700;
-            margin-bottom: 10px;
-            color: var(--color-primary-red);
-            text-align: center;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .text-muted {
-            font-size: 1.05rem;
-            margin-bottom: 30px;
+
+        /* --- TÍTULOS Y TEXTO BONITO --- */
+        .step-title {
+            color: var(--color-primary-red);
+            font-weight: 900; 
+            margin-bottom: 8px;
+            font-size: 2.2rem; 
+            letter-spacing: -0.5px;
+        }
+        .info-text {
             color: var(--color-text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 40px; 
+        }
+        .form-group-label {
+            font-size: 1.3rem; 
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: var(--color-text-dark);
             text-align: center;
+            display: block;
         }
         
-        /* Contenedor de Opciones */
-        .resultado-opciones {
+        /* Oculta el input radio original */
+        .option-input {
+            position: absolute;
+            opacity: 0;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            border: 0;
+            clip: rect(0 0 0 0);
+        }
+
+        /* --- CONTENEDOR DE OPCIONES (GRID) --- */
+        .selection-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr; 
+            gap: 25px; 
+        }
+
+        /* La etiqueta (label) actúa como el botón visible (tarjeta) */
+        .option-card {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            margin-bottom: 40px;
-            padding: 0;
-            list-style: none;
-        }
-
-        /* Estilo para cada Opción de Radio (Simulación de Bootstrap Check) */
-        .opcion-resultado {
-            position: relative; /* Para posicionar el radio custom */
-            display: block;
-            padding: 20px 25px;
-            border: 2px solid var(--color-border-light);
-            border-radius: 10px;
-            transition: all 0.2s ease-in-out;
+            align-items: center;
+            justify-content: center;
+            height: 190px; 
+            padding: 20px;
+            border: 1px solid var(--color-border-light); 
+            border-radius: 18px; 
             cursor: pointer;
-            user-select: none; /* Evitar que el texto se seleccione al hacer clic */
+            transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            text-align: center;
+            background: var(--color-card-bg);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+            position: relative; 
         }
 
-        .opcion-resultado:hover {
-            border-color: #aaa;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        .option-card:hover {
+            transform: scale(1.05); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border-color: #ced4da;
         }
 
-        /* Ocultar el radio nativo */
-        .opcion-input {
-            opacity: 0;
-            position: absolute;
-        }
-
-        /* Estilo del texto */
-        .opcion-label {
-            font-weight: 700;
-            font-size: 1.5rem;
-            margin-left: 35px; /* Espacio para el círculo custom */
-        }
-
-        /* Círculo de Radio Custom (Antes del Label) */
-        .opcion-label::before {
-            content: '';
-            position: absolute;
-            left: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
+        /* Estilo del Ícono */
+        .option-icon {
+            width: 75px; 
+            height: 75px;
             border-radius: 50%;
-            border: 2px solid var(--color-text-muted);
-            background-color: var(--color-card-bg);
-            transition: all 0.2s;
+            margin-bottom: 15px;
+            font-size: 3.2rem;
+            color: var(--color-text-muted);
+            background-color: var(--color-icon-bg-default);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* Círculo interior (Después del Label, marcado) */
-        .opcion-label::after {
-            content: '';
-            position: absolute;
-            left: 25px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: white; /* Color del punto interior */
-            opacity: 0; /* Oculto por defecto */
-            transition: opacity 0.2s;
+        /* Estilo del Título del Resultado */
+        .option-title {
+            font-size: 1.5rem; 
+            font-weight: 800;
+            color: var(--color-text-dark);
+            transition: color 0.3s;
         }
 
-        /* Estado SELECCIONADO */
-        .opcion-input:checked + .opcion-label::before {
-            background-color: var(--color-primary-red);
-            border-color: var(--color-primary-red);
+        /* --- ESTADO SELECCIONADO: NEGATIVO (INTERACTIVO - VERDE) --- */
+        #resultadoNegativo:checked + .option-card {
+            border: 3px solid var(--color-success-green); 
+            background-color: #f0fff4 !important; 
+            box-shadow: 0 0 15px rgba(56, 142, 60, 0.4); 
+            transform: scale(1.05); 
+        }
+        #resultadoNegativo:checked + .option-card .option-icon {
+            background-color: var(--color-success-green);
+            color: white;
+        }
+        #resultadoNegativo:checked + .option-card .option-title {
+            color: var(--color-success-green);
         }
 
-        /* Mostrar punto interior cuando está checked */
-        .opcion-input:checked + .opcion-label::after {
-            opacity: 1;
+        /* --- ESTADO SELECCIONADO: POSITIVO (INTERACTIVO - ROJO) --- */
+        #resultadoPositivo:checked + .option-card {
+            border: 3px solid var(--color-primary-red);
+            background-color: #fff5f5 !important; 
+            box-shadow: 0 0 15px rgba(211, 47, 47, 0.4); 
+            transform: scale(1.05);
         }
-
-        /* Colores de texto específicos */
-        .text-negativo { color: var(--color-success-green); }
-        .text-positivo { color: var(--color-primary-red); }
-
-        /* Botón de Envío */
-        .btn-submit {
+        #resultadoPositivo:checked + .option-card .option-icon {
             background-color: var(--color-primary-red);
             color: white;
-            border: none;
-            width: 100%;
-            padding: 15px;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            margin-top: 20px;
+        }
+        #resultadoPositivo:checked + .option-card .option-title {
+            color: var(--color-primary-red);
         }
 
-        .btn-submit:hover {
-            background-color: #a52a2a; /* Tono más oscuro de rojo */
+        /* Botón de Envío (Dramático y Brillante) */
+        .btn-submit-custom {
+            /* Degradado más intenso */
+            background: linear-gradient(90deg, #E53935 0%, var(--color-primary-red) 100%);
+            border: none;
+            color: white;
+            font-weight: 900;
+            font-size: 1.3rem;
+            padding: 20px; 
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            width: 100%;
+            margin-top: 40px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4); /* Sombra inicial */
+        }
+
+        .btn-submit-custom:hover {
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 25px rgba(211, 47, 47, 0.6); 
+            color: white;
+        }
+        
+        /* Ajuste para móviles (responsive) */
+        @media (max-width: 576px) {
+            .main-card {
+                padding: 25px 20px;
+                margin: 10px;
+            }
+            .step-title {
+                font-size: 1.8rem;
+            }
+            .selection-container {
+                grid-template-columns: 1fr; 
+            }
+            .option-card {
+                flex-direction: row; 
+                justify-content: flex-start;
+                height: 80px; 
+                padding: 15px 20px;
+                gap: 15px;
+                border-radius: 12px;
+            }
+            .option-icon {
+                font-size: 2rem;
+                width: 45px;
+                height: 45px;
+            }
+            .option-title {
+                font-size: 1.2rem;
+            }
+            .btn-submit-custom {
+                font-size: 1.1rem;
+                padding: 15px;
+            }
         }
     </style>
 {% endblock %}
 
 {% block content %}
-<div class="card">
-    <h2 class="text-center">Paso Final: Ingresa tu Resultado</h2>
-    
-    <p class="text-muted">
-        Selecciona el resultado que obtuviste en tu prueba de autodiagnóstico VIH. 
-        Este paso es irreversible y confidencial.
-    </p>
-
-    <form method="POST" action="{{ url_for('paciente_bp.guardar_resultado') }}">
+<div class="container py-4">
+    <div class="main-card">
         
-        <div class="form-group">
+        <div class="text-center">
+            <h2 class="step-title">Paso Final: Ingresa tu Resultado</h2>
+            <p class="info-text">
+                Selecciona la opción que coincida con el resultado visual de tu prueba.
+                <br><small class="text-muted">Esta información es confidencial y anónima.</small>
+            </p>
+        </div>
+
+        <form method="POST" action="{{ url_for('paciente_bp.guardar_resultado') }}" class="mt-4">
             
-            <label class="form-label d-block h4" style="text-align: center;">Resultado de la Prueba:</label>
-            
-            <div class="resultado-opciones">
+            <div class="form-group mb-4">
+                <label class="form-group-label">¿Qué resultado obtuviste?</label>
                 
-                {# Opción NEGATIVO #}
-                <label for="resultadoNegativo" class="opcion-resultado">
-                    <input type="radio" name="resultado" id="resultadoNegativo" value="Negativo" required class="opcion-input">
-                    <span class="opcion-label text-negativo">Negativo</span>
-                </label>
-                
-                {# Opción POSITIVO #}
-                <label for="resultadoPositivo" class="opcion-resultado">
-                    <input type="radio" name="resultado" id="resultadoPositivo" value="Positivo" required class="opcion-input">
-                    <span class="opcion-label text-positivo">Positivo</span>
-                </label>
-                
+                <div class="selection-container">
+                    
+                    {# Opción NEGATIVO #}
+                    <div>
+                        <input type="radio" name="resultado" id="resultadoNegativo" value="Negativo" class="option-input" required>
+                        <label class="option-card" for="resultadoNegativo">
+                            <i class="fas fa-minus-circle option-icon"></i>
+                            <span class="option-title">Negativo</span>
+                        </label>
+                    </div>
+                    
+                    {# Opción POSITIVO #}
+                    <div>
+                        <input type="radio" name="resultado" id="resultadoPositivo" value="Positivo" class="option-input" required>
+                        <label class="option-card" for="resultadoPositivo">
+                            <i class="fas fa-plus-circle option-icon"></i>
+                            <span class="option-title">Positivo</span>
+                        </label>
+                    </div>
+
+                </div>
             </div>
             
-        </div>
-        
-        <button type="submit" class="btn-submit">
-            GUARDAR RESULTADO Y VER RECOMENDACIONES
-        </button>
-        
-    </form>
+            <button type="submit" class="btn-submit-custom">
+                GUARDAR Y VER RECOMENDACIONES
+            </button>
+            
+        </form>
+    </div>
 </div>
 {% endblock content %}

@@ -65,7 +65,8 @@
         box-sizing: border-box;
     }
 
-    /* Estilo para los selectores/inputs deshabilitados */
+    /* Estilo para los selectores/inputs de solo lectura */
+    .form-container input[readonly],
     .form-container select:disabled,
     .form-container input:disabled {
         background-color: var(--color-disabled-bg);
@@ -99,6 +100,12 @@
 
     .btn-primary.btn-full-width:hover {
         background-color: var(--color-primary-red-dark);
+    }
+
+    /* Estilo para el botón deshabilitado */
+    .btn-primary.btn-full-width:disabled {
+        background-color: #6C7A89; /* Color de fondo para indicar que está deshabilitado */
+        cursor: not-allowed;
     }
 
     .description-text {
@@ -156,13 +163,14 @@
             <div class="grid-item">
                 <label for="campaign_number">1. Número de Campaña:</label>
                 <input type="text" id="campaign_number" name="campaign_number" required
-                    placeholder="Ej: Campaña Invierno 2023" value="{{ data.campaign_number | default('') }}">
+                    placeholder="Ej: Campaña 1" value="{{ data.campaign_number | default('') }}">
             </div>
 
             <div class="grid-item">
                 <label for="delivery_date">2. Fecha de Entrega (Prevista):</label>
+                {# Establecer readonly si se ha cargado una campaña existente en JS #}
                 <input type="date" id="delivery_date" name="delivery_date" required placeholder="AAAA-MM-DD"
-                    value="{{ data.delivery_date | default('2025-11-15') }}">
+                    value="{{ data.delivery_date | default(today) }}">
             </div>
 
             <div class="grid-item">
@@ -175,6 +183,7 @@
 
             <div class="grid-item">
                 <label for="estado">4. Estado:</label>
+                {# El estado será deshabilitado si se carga una campaña existente en JS #}
                 <select id="estado" name="estado" required>
                     <option value="" disabled selected>Seleccione un Estado</option>
                     {# Carga de todos los estados #}
@@ -186,6 +195,7 @@
 
             <div class="grid-item">
                 <label for="municipio">5. Municipio:</label>
+                {# El municipio será deshabilitado si se carga una campaña existente en JS #}
                 <select id="municipio" name="municipio" required>
                     <option value="" disabled selected>Seleccione un Municipio</option>
                     {# Carga de todos los municipios (¡NO en cascada!) #}
@@ -198,6 +208,7 @@
 
             <div class="grid-item">
                 <label for="colonia">6. Colonia:</label>
+                {# La colonia será deshabilitada si se carga una campaña existente en JS #}
                 <select id="colonia" name="colonia" required>
                     <option value="" disabled selected>Seleccione una Colonia</option>
                     {# Carga de todas las colonias (¡NO en cascada!), incluyendo el CP como atributo #}
@@ -212,14 +223,14 @@
 
             <div class="grid-item">
                 <label for="codigo_postal">7. Código Postal:</label>
-                {# Este campo es un input de texto que se auto-rellena y permanece deshabilitado #}
-                <input type="text" id="codigo_postal" name="codigo_postal" disabled
+                {# CAMBIO CRÍTICO: Usamos readonly en lugar de disabled para que el valor se envíe en el POST #}
+                <input type="text" id="codigo_postal" name="codigo_postal" readonly
                     placeholder="Se auto-genera al seleccionar colonia" value="">
             </div>
 
         </div>
 
-        <button type="submit" class="btn-primary btn-full-width">
+        <button type="submit" class="btn-primary btn-full-width btn-submit">
             GENERAR QRS
         </button>
     </form>
@@ -235,110 +246,235 @@
 {% block scripts %}
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const campaignNumberInput = document.getElementById('campaign_number');
+        const deliveryDateInput = document.getElementById('delivery_date');
+        const quantityInput = document.getElementById('quantity');
         const estadoSelect = document.getElementById('estado');
         const municipioSelect = document.getElementById('municipio');
         const coloniaSelect = document.getElementById('colonia');
         const cpInput = document.getElementById('codigo_postal');
+        const submitButton = document.querySelector('.btn-submit'); // Seleccionamos el botón
 
-        // Almacenar todas las opciones originales, incluyendo la de 'Seleccione un...'
+        // VALORES POR DEFECTO Y OPCIONES
+        const todayDate = '{{ today }}'; 
         const todosMunicipios = Array.from(municipioSelect.options);
         const todasColonias = Array.from(coloniaSelect.options);
-        
-        // La primera opción es siempre la de 'Seleccione' (value=""). La guardamos.
         const defaultMunicipioOption = todosMunicipios.find(opt => opt.value === "");
         const defaultColoniaOption = todasColonias.find(opt => opt.value === "");
 
-        // ------------------------------------------
-        // 1. Lógica de Filtrado de Municipios (Estado -> Municipio)
-        // ------------------------------------------
+        // --- FUNCIONES DE MANEJO DEL FORMULARIO ---
+
+        /** Restablece los selects de ubicación al estado "Seleccione un..." y limpia el CP. */
+        function resetLocationSelects() {
+            municipioSelect.innerHTML = "";
+            municipioSelect.appendChild(defaultMunicipioOption.cloneNode(true));
+            municipioSelect.value = ""; 
+
+            coloniaSelect.innerHTML = "";
+            coloniaSelect.appendChild(defaultColoniaOption.cloneNode(true));
+            coloniaSelect.value = ""; 
+
+            estadoSelect.value = ""; 
+            
+            cpInput.value = "";
+            cpInput.placeholder = "Se auto-genera al seleccionar colonia";
+
+            // Asegura que los campos de ubicación estén editables
+            estadoSelect.disabled = false;
+            municipioSelect.disabled = false;
+            coloniaSelect.disabled = false;
+        }
+
+        /** Restablece los campos principales (Fecha y Cantidad) a valores por defecto. */
+        function clearPrimaryFields() {
+            // Restablecemos la fecha al valor del Jinja ({{ today }})
+            deliveryDateInput.value = todayDate;
+            quantityInput.value = '1';
+            deliveryDateInput.readOnly = false; // Asegura que la fecha sea editable
+        }
+
+        // --- LÓGICA DE FILTRADO DE UBICACIÓN (CASCADA) ---
 
         function filtrarMunicipiosPorIdEstado(idEstado) {
-            // Filtra solo los municipios que coinciden con el idEstado
-            // o si el idEstado es vacío (para mostrar nada o la opción por defecto)
             return todosMunicipios.filter(opcion => 
                 opcion.value === "" || opcion.dataset.estado == idEstado
             );
         }
-
-        estadoSelect.addEventListener('change', (e) => {
-            const idEstadoSeleccionado = e.target.value;
-            
-            // 1. Filtrar y actualizar municipios
-            const municipiosFiltrados = filtrarMunicipiosPorIdEstado(idEstadoSeleccionado);
-            
-            // 2. Limpiar y reintroducir la opción por defecto y las filtradas
-            municipioSelect.innerHTML = "";
-            municipiosFiltrados.forEach(opcionMunicipio => {
-                municipioSelect.appendChild(opcionMunicipio.cloneNode(true)); // Usar cloneNode es más seguro
-            });
-            
-            // 3. Forzar limpieza de Colonias y CP
-            coloniaSelect.innerHTML = "";
-            coloniaSelect.appendChild(defaultColoniaOption.cloneNode(true));
-            cpInput.value = "";
-            cpInput.placeholder = "Se auto-genera al seleccionar colonia";
-        });
-
-        // ------------------------------------------
-        // 2. Lógica de Filtrado de Colonias (Municipio -> Colonia)
-        // ------------------------------------------
-
+        
         function filtrarColoniasPorIdMunicipio(idMunicipio) {
-             // Filtra solo las colonias que coinciden con el idMunicipio
             return todasColonias.filter(opcion => 
                 opcion.value === "" || opcion.dataset.municipio == idMunicipio
             );
         }
 
-        municipioSelect.addEventListener('change', (e) => {
-            const idMunicipioSeleccionado = e.target.value;
+        /** Rellena un select con opciones filtradas y selecciona un valor si se proporciona. */
+        function populateSelect(selectElement, filteredOptions, selectedValue = null) {
+            selectElement.innerHTML = "";
             
-            // 1. Filtrar y actualizar colonias
-            const coloniasFiltradas = filtrarColoniasPorIdMunicipio(idMunicipioSeleccionado);
-
-            // 2. Limpiar y reintroducir la opción por defecto y las filtradas
-            coloniaSelect.innerHTML = "";
-            coloniasFiltradas.forEach(opcionColonia => {
-                coloniaSelect.appendChild(opcionColonia.cloneNode(true)); // Usar cloneNode es más seguro
+            filteredOptions.forEach(opcion => {
+                selectElement.appendChild(opcion.cloneNode(true));
             });
             
-            // 3. Forzar limpieza de CP
-            cpInput.value = "";
-            cpInput.placeholder = "Se auto-genera al seleccionar colonia";
-        });
+            if (selectedValue) {
+                selectElement.value = String(selectedValue);
+            } else {
+                selectElement.value = ""; 
+            }
+        }
         
-        // ------------------------------------------
-        // 3. Auto-relleno de Código Postal
-        // ------------------------------------------
-
-        coloniaSelect.addEventListener('change', (event) => {
-            const selectedOption = event.target.options[event.target.selectedIndex];
+        /** Actualiza el select de Colonia y el input de Código Postal. */
+        function updateColoniaAndCP(idMunicipio, idColonia = null, cpValueFromDB = null) {
+            const coloniasFiltradas = filtrarColoniasPorIdMunicipio(idMunicipio);
             
-            // Leer el atributo 'data-cp' que adjuntamos con Jinja.
-            const cpValue = selectedOption.value === "" ? '' : selectedOption.getAttribute('data-cp');
+            populateSelect(coloniaSelect, coloniasFiltradas, idColonia);
 
-            // Asignar el valor del CP al input.
-            cpInput.value = cpValue || '';
-            cpInput.placeholder = cpValue || 'Se auto-genera al seleccionar colonia';
+            let finalCP = '';
+            if (cpValueFromDB) {
+                finalCP = cpValueFromDB;
+            } else if (idColonia && coloniaSelect.value) {
+                const selectedOption = coloniaSelect.options[coloniaSelect.selectedIndex];
+                finalCP = selectedOption ? selectedOption.getAttribute('data-cp') : '';
+            } 
+            
+            cpInput.value = finalCP || '';
+            cpInput.placeholder = finalCP || 'Se auto-genera al seleccionar colonia';
+        }
 
-            // Asegura que el campo de CP siempre esté deshabilitado.
-            cpInput.disabled = true;
+        // Eventos de usuario para el filtrado en cascada
+        estadoSelect.addEventListener('change', (e) => {
+            if (estadoSelect.disabled) return;
+            const idEstadoSeleccionado = e.target.value;
+            const municipiosFiltrados = filtrarMunicipiosPorIdEstado(idEstadoSeleccionado);
+            
+            populateSelect(municipioSelect, municipiosFiltrados);
+            updateColoniaAndCP(""); 
         });
 
-        // ------------------------------------------
-        // 4. Inicialización (Restablecer los selects para la carga inicial)
-        // ------------------------------------------
+        municipioSelect.addEventListener('change', (e) => {
+            if (municipioSelect.disabled) return;
+            const idMunicipioSeleccionado = e.target.value;
+            updateColoniaAndCP(idMunicipioSeleccionado);
+        });
         
-        // Clonamos las opciones por defecto para evitar que el filtro afecte el original
-        municipioSelect.innerHTML = "";
-        municipioSelect.appendChild(defaultMunicipioOption.cloneNode(true));
+        coloniaSelect.addEventListener('change', (event) => {
+            if (coloniaSelect.disabled) return;
+            const selectedOption = event.target.options[event.target.selectedIndex];
+            const cpValue = selectedOption.value === "" ? '' : selectedOption.getAttribute('data-cp') || '';
+
+            cpInput.value = cpValue;
+            cpInput.placeholder = cpValue || 'Se auto-genera al seleccionar colonia';
+        });
+
         
-        coloniaSelect.innerHTML = "";
-        coloniaSelect.appendChild(defaultColoniaOption.cloneNode(true));
+        // LÓGICA DE CONSULTA Y RELLENO DE CAMPAÑA 
         
-        // Asegurar que el input de CP esté deshabilitado al inicio.
-        if (cpInput) {
-            cpInput.disabled = true;
+
+        campaignNumberInput.addEventListener('change', () => {
+            const campaignNumber = campaignNumberInput.value.trim();
+
+            if (campaignNumber.length > 0) {
+                const url = `{{ url_for('doctor_bp.consultar_campana', numero_campana='DUMMY') }}`.replace('DUMMY', campaignNumber);
+                
+                // Deshabilitar el botón mientras se consulta
+                submitButton.disabled = true;
+                submitButton.textContent = 'CONSULTANDO CAMPAÑA...';
+
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                             throw new Error('Error de red al consultar la campaña');
+                        }
+                        return response.json();
+                    })
+                    .then(result => {
+                        if (result.exists && result.data) {
+                            const data = result.data;
+                            
+                            // 1. Rellenar Fecha de Entrega y forzar ReadOnly
+                            // Si la fecha existe en la DB, debe estar en formato YYYY-MM-DD
+                            deliveryDateInput.value = data.fecha_entrega; 
+                            deliveryDateInput.readOnly = true;
+                            
+                            // 2. Rellenar Estado y deshabilitar
+                            estadoSelect.value = data.id_estado;
+                            estadoSelect.disabled = true;
+                            
+                            // 3. Filtrar, rellenar Municipio y deshabilitar
+                            const municipiosFiltrados = filtrarMunicipiosPorIdEstado(data.id_estado);
+                            populateSelect(municipioSelect, municipiosFiltrados, data.id_municipio);
+                            municipioSelect.disabled = true;
+
+                            // 4. Filtrar, rellenar Colonia y CP, y deshabilitar
+                            updateColoniaAndCP(data.id_municipio, data.id_colonia, data.codigo_postal);
+                            coloniaSelect.disabled = true;
+
+                            // 5. Deshabilitar botón y mostrar estado de la campaña (MOSTRAR CONTEO DE QRS)
+                            submitButton.disabled = true;
+                            // La cantidad de QRs existentes se muestra aquí:
+                            submitButton.textContent = `CAMPAÑA EXISTENTE (${data.qrs_existentes} QRs GENERADOS) - NO SE PUEDE CREAR DE NUEVO.`; 
+                            
+                            // NOTA: quantityInput se mantiene editable para generar QRs adicionales.
+
+                        } else {
+                            // Campaña no encontrada: Restablecer todos los campos y habilitar el botón
+                            clearPrimaryFields(); 
+                            resetLocationSelects(); // Esto habilita los selects de ubicación
+
+                            submitButton.disabled = false;
+                            submitButton.textContent = 'GENERAR QRS';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al consultar la campaña:', error);
+                        alert("Hubo un error al buscar la campaña. Intente de nuevo. Se habilitó el botón.");
+                        
+                        // Si hay un error, dejamos el formulario editable por si fue un error de red
+                        clearPrimaryFields();
+                        resetLocationSelects();
+
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'GENERAR QRS'; 
+                    });
+            } else {
+                // Si el campo de campaña se deja vacío, restablecer campos
+                clearPrimaryFields();
+                resetLocationSelects();
+                submitButton.disabled = false;
+                submitButton.textContent = 'GENERAR QRS';
+            }
+        });
+        
+        // --- INICIALIZACIÓN (Asegurando la precarga de fecha/cantidad) ---
+        
+        // Verificar si hay datos de estado precargados (indica un POST fallido)
+        const hasPreloadedData = '{{ data.estado | default("") }}' !== '';
+
+        if (!hasPreloadedData) {
+            // Si no hay datos precargados, inicializa limpiamente (muestra los selects de ubicación vacíos)
+            resetLocationSelects();
+        } else {
+            // Si hay datos precargados (POST fallido), re-selecciona y rellena los campos principales
+
+            const idEstadoPrecargado = '{{ data.estado | default("") }}';
+            const idMunicipioPrecargado = '{{ data.municipio | default("") }}';
+            const idColoniaPrecargada = '{{ data.colonia | default("") }}';
+            const cpPrecargado = '{{ data.codigo_postal | default("") }}';
+
+            if (idEstadoPrecargado) {
+                // Rellenar campos principales (estos vienen del formulario POST que falló)
+                deliveryDateInput.value = '{{ data.delivery_date | default(today) }}'; // Rellena fecha
+                quantityInput.value = '{{ data.quantity | default(1) }}'; // Rellena cantidad
+
+                // Rellenar ubicaciones en cascada
+                estadoSelect.value = idEstadoPrecargado;
+                
+                const municipiosFiltrados = filtrarMunicipiosPorIdEstado(idEstadoPrecargado);
+                populateSelect(municipioSelect, municipiosFiltrados, idMunicipioPrecargado);
+                
+                if (idMunicipioPrecargado) {
+                    updateColoniaAndCP(idMunicipioPrecargado, idColoniaPrecargada, cpPrecargado);
+                }
+            }
         }
     });
 </script>

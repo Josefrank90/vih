@@ -1,22 +1,20 @@
-# database/connection.py (CORREGIDO PARA SOPORTAR INSERT Y UPDATE)
-
 import mysql.connector
 from flask import current_app, g
 from functools import wraps 
 
-db_pool = None # Se mantiene como None
+db_pool = None 
 
 def get_db():
     """Inicializa y devuelve una conexión directa (NO de Pool), utilizando las claves de Config."""
     if 'db' not in g:
         try:
-            # CORRECCIÓN CRÍTICA: Usamos las CLAVES (MYSQL_HOST, etc.) para acceder a los VALORES.
+            
             g.db = mysql.connector.connect(
                 host=current_app.config['MYSQL_HOST'],
                 user=current_app.config['MYSQL_USER'],
                 password=current_app.config['MYSQL_PASSWORD'],
                 database=current_app.config['MYSQL_DB'],
-                port=current_app.config['MYSQL_PORT'], # Añadimos el puerto
+                port=current_app.config['MYSQL_PORT'], 
                 raise_on_warnings=True # Útil para depuración
             )
         except mysql.connector.Error as e:
@@ -50,7 +48,7 @@ def execute_query(query, params=None, fetch_one=False, commit=False):
         if commit:
             conn.commit()
             
-            # 🚨 CORRECCIÓN CLAVE: Devolver rowcount para UPDATE/DELETE
+            
             if normalized_query.startswith(('UPDATE', 'DELETE')):
                 # Devuelve el número de filas afectadas (ej. 1 si fue exitoso)
                 return cursor.rowcount 
@@ -70,7 +68,7 @@ def execute_query(query, params=None, fetch_one=False, commit=False):
     except mysql.connector.Error as err:
         current_app.logger.error(f"Error SQL: {err} | Query: {query} | Params: {params}")
         if commit:
-            conn.rollback() # Deshace cambios si el INSERT/UPDATE falló
+            conn.rollback() 
         return 0 # Devuelve 0 para indicar que 0 filas fueron afectadas, indicando un fallo
     finally:
         # Es fundamental cerrar el cursor después de cada ejecución

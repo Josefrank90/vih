@@ -8,7 +8,7 @@ from io import BytesIO
 import json
 from decimal import Decimal
 
-IP_DEL_SERVIDOR = '192.168.100.147' 
+IP_DEL_SERVIDOR = '192.168.8.31' 
 PUERTO = '5000'
 BASE_URL = f"http://{IP_DEL_SERVIDOR}:{PUERTO}"
 # ---------------------
@@ -46,15 +46,15 @@ def generar_qr_base64(data_qr):
         buffer = BytesIO()
         img.save(buffer, format="PNG")
         
-        # Codificar a Base64 y agregar el prefijo de datos
+        # Codificar a Base y agregar el prefijo de datos
         return f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode('utf-8')}"
     except Exception as e:
         current_app.logger.error(f"Error al generar QR Base64 para data '{data_qr}': {e}")
         return None 
 
-# -------------------------------------------------------------------
+
 # --- FUNCIÓN AUXILIAR PARA CARGAR DATOS DE UBICACIÓN (NUEVA) ---
-# -------------------------------------------------------------------
+
 def cargar_datos_ubicacion_enfermero():
     """Consulta y retorna todos los estados, municipios y colonias para el formulario."""
     try:
@@ -77,9 +77,8 @@ def cargar_datos_ubicacion_enfermero():
     return estados_data, municipios_data, colonias_data
 
 
-# -------------------------------------------------------------------
 # --- 1. DASHBOARD (Mantiene protección de sesión) ---
-# -------------------------------------------------------------------
+
 @enfermero_bp.route('/dashboard')
 @enfermero_login_required 
 def dashboard():
@@ -130,9 +129,9 @@ def dashboard():
                            nuevos_registros=nuevos_registros,
                            qrs_pendientes_tabla=qrs_pendientes_tabla)
 
-# -------------------------------------------------------------------
+
 # --- 2. INICIO DE VINCULACIÓN (Mantiene protección de sesión) ---
-# -------------------------------------------------------------------
+
 @enfermero_bp.route('/vincular_inicio')
 @enfermero_login_required 
 def vincular_inicio():
@@ -170,9 +169,9 @@ def vincular_inicio():
     return render_template('enfermero/vincular_inicio.html', qrs_pendientes=qrs_listos)
 
 
-# -------------------------------------------------------------------
+
 # --- 3. VINCULAR QR A PACIENTE (Flujo directo sin Dashboard) ---
-# -------------------------------------------------------------------
+
 @enfermero_bp.route('/vincular_con_codigo', defaults={'codigo': None}, methods=['GET', 'POST'])
 @enfermero_bp.route('/vincular_con_codigo/<string:codigo>', methods=['GET', 'POST'])
 # NO requiere @enfermero_login_required para acceso directo desde QR
@@ -302,9 +301,8 @@ def vincular_con_codigo(codigo):
                             colonias=colonias_data)
 
 
-# -------------------------------------------------------------------
 # --- 4. CONFIRMACIÓN DE QR Y URL DEL PACIENTE (NO requiere sesión) ---
-# -------------------------------------------------------------------
+
 @enfermero_bp.route('/confirmacion_qr')
 # NO requiere @enfermero_login_required
 def confirmacion_qr():
@@ -332,10 +330,8 @@ def confirmacion_qr():
                              paciente_id=paciente_id,
                              url_completa=url_completa)
 
-
-# -------------------------------------------------------------------
 # --- 5. LISTA DE PACIENTES REGISTRADOS (Mantiene protección de sesión) ---
-# -------------------------------------------------------------------
+
 @enfermero_bp.route('/pacientes')
 @enfermero_login_required 
 def pacientes():

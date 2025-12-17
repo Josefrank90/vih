@@ -16,80 +16,170 @@
 
     {# ESTILOS INTERNOS PARA EL LAYOUT Y EL TOP SIDEBAR #}
     <style>
-        /* Asumiendo que tu sidebar tiene 260px de ancho */
+        /* --- VARIABLES --- */
+        :root {
+            --sidebar-width: 260px;
+            --header-height-pc: 80px;
+            --header-height-mobile: 65px;
+            --main-bg: #f4f6f9; 
+            --sidebar-bg: #883a35; 
+            --active-red: #D32F2F; 
+            --text-light: #f8f9fa;
+        }
+        
+        body {
+            background-color: var(--main-bg);
+            margin: 0;
+            padding: 0;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+        
+        /* --- Overlay para el modo móvil (cubre el fondo cuando el menú está abierto) --- */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Fondo semi-transparente oscuro */
+            z-index: 999; 
+            transition: opacity 0.3s;
+        }
+
+        /* --- LAYOUT GENERAL (PC / DEFAULT) --- */
         .dashboard-layout {
             display: flex; 
             min-height: 100vh;
         }
 
+        /* --- SIDEBAR (Menú Lateral - PC) --- */
         .sidebar {
-            width: 260px; /* Ancho fijo de tu menú lateral */
+            width: var(--sidebar-width); 
             position: fixed; 
             top: 0;
             left: 0;
             height: 100%;
             z-index: 1000;
-            /* ... (El resto de tus estilos de sidebar) ... */
-        }
-
-        .dashboard-content {
-            /* CLAVE: Empieza después del sidebar y ocupa el ancho restante */
-            margin-left: 260px; 
-            width: calc(100% - 260px); 
-            flex-grow: 1; 
-            padding: 0; /* Asegura que no haya espacios de separación en los bordes */
+            background-color: var(--sidebar-bg);
+            color: var(--text-light);
+            transition: transform 0.3s ease-in-out;
+            overflow-y: auto; 
         }
         
-        /* ESTILOS DE LA BARRA SUPERIOR - ¡MODIFICADOS AQUÍ! */
-        .top-sidebar-header {
-            /* Usando el color rojo/borgoña de tu menú lateral */
-            background-color: #883a35; 
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .profile-pic {
+            font-size: 3rem;
             color: white;
-            padding: 10px 30px; /* Menos padding vertical para que los logos se vean mejor */
+            margin-bottom: 10px;
+        }
+        /* ... (Estilos de perfil y navegación se mantienen) ... */
+        .sidebar-header h2 { font-size: 1.4rem; font-weight: 700; margin: 0; }
+        .sidebar-header p { font-size: 0.9rem; opacity: 0.8; margin: 2px 0; }
+        .sidebar-nav ul { list-style: none; padding: 0; margin: 0; }
+        .sidebar-nav a {
+            display: flex; align-items: center; padding: 15px 20px;
+            color: var(--text-light); text-decoration: none; font-size: 1rem;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        .sidebar-nav a i { margin-right: 15px; font-size: 1.1rem; }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: #6a2a26; 
+            border-left: 5px solid var(--active-red); 
+            padding-left: 15px;
+        }
+
+        /* --- CONTENIDO PRINCIPAL (PC / DEFAULT) --- */
+        .dashboard-content {
+            margin-left: var(--sidebar-width); 
+            width: calc(100% - var(--sidebar-width)); 
+            flex-grow: 1; 
+            padding: 0; 
+            min-height: 100vh;
+        }
+        
+        /* --- BARRA SUPERIOR (TOP HEADER) --- */
+        .top-sidebar-header {
+            background-color: var(--sidebar-bg); 
+            color: white;
+            height: var(--header-height-pc); 
+            padding: 0 30px; 
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             width: 100%; 
             box-sizing: border-box; 
-            
-            /* PROPIEDADES DE FLEXBOX PARA ALINEAR TÍTULO Y LOGOS */
             display: flex; 
-            justify-content: space-between; /* Empuja el contenido a los extremos */
-            align-items: center; /* Centra verticalmente todos los elementos */
+            justify-content: space-between; 
+            align-items: center; 
+        }
+        /* ... (Estilos de top-header se mantienen) ... */
+        .top-header-text-container { display: flex; flex-direction: column; justify-content: center; }
+        .top-header-title { font-size: 1.8rem; font-weight: 600; margin: 0; }
+        .top-header-subtitle { font-size: 1rem; opacity: 0.8; margin: 0; }
+        .top-header-logos { display: flex; align-items: center; }
+        .header-logo { height: 50px; margin-left: 20px; }
+        .page-content-wrapper { padding: 30px; }
+
+        /* --- MENÚ MÓVIL (Hamburguesa) --- */
+        .menu-toggle {
+            display: none; 
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 10px;
         }
         
-        /* Nuevo contenedor para los títulos */
-        .top-header-text-container {
-            /* Asegura que los títulos no ocupen espacio adicional */
-            display: flex;
-            flex-direction: column;
-        }
+        /* --- ESTILOS RESPONSIVOS (MÓVIL / TABLET) --- */
+        @media (max-width: 992px) {
+            
+            /* 1. HEADER (Fixed) */
+            .top-sidebar-header {
+                height: var(--header-height-mobile);
+                position: fixed; 
+                top: 0;
+                left: 0;
+                width: 100%;
+                z-index: 1010; 
+                padding: 0 15px; 
+            }
+            .menu-toggle { display: block; }
+            .top-header-text-container { margin-left: 10px; }
+            .header-logo { height: 40px; margin-left: 10px; }
 
-        .top-header-title {
-            font-size: 1.8rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .top-header-subtitle {
-            font-size: 1rem;
-            opacity: 0.8;
-            margin: 0;
-        }
-        
-        /* Nuevo contenedor para los logos */
-        .top-header-logos {
-            display: flex;
-            align-items: center;
-        }
-
-        /* Estilo para los logos */
-        .header-logo {
-            height: 60px; /* Define un tamaño para los logos */
-            margin-left: 60px; /* Espacio entre los logos y el texto del encabezado */
-        }
-        
-        .page-content-wrapper {
-            /* Agrega el padding interno aquí, para que el contenido no toque los bordes del main */
-            padding: 30px; 
+            /* 2. SIDEBAR: Menú Desplegable Flotante */
+            .sidebar {
+                /* CLAVE: Lo posicionamos fuera de la vista */
+                transform: translateX(-100%);
+                position: fixed; 
+                width: 260px; /* Ancho fijo para que no se extienda por toda la pantalla */
+                max-width: 80%;
+                top: var(--header-height-mobile); /* ALINEADO BAJO EL HEADER */
+                height: auto; /* Se ajusta a su contenido */
+                max-height: calc(100vh - var(--header-height-mobile) - 20px); /* Límite de altura */
+                border-radius: 0 0 15px 0; /* Borde redondeado solo abajo a la derecha */
+                box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.4); /* Sombra marcada para flotar */
+                z-index: 1001; /* Flota sobre el overlay */
+                overflow-y: auto;
+            }
+            .sidebar.active {
+                transform: translateX(0); 
+            }
+            
+            /* Muestra el overlay cuando el sidebar está activo */
+            .sidebar-overlay.active {
+                display: block;
+            }
+            
+            /* 3. CONTENIDO PRINCIPAL: Deja espacio para el header fijo */
+            .dashboard-content {
+                margin-left: 0; 
+                width: 100%;
+                padding-top: var(--header-height-mobile); 
+            }
+            
+            .page-content-wrapper { padding: 30px 15px; }
         }
     </style>
     {% block head %}{% endblock %}
@@ -97,18 +187,22 @@
 </head>
 <body>
     
+    {# Overlay: Cubre el fondo y cierra el menú al hacer clic #}
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <div class="dashboard-layout">
-        <aside class="sidebar">
+        
+        {# Sidebar (Menú Deslizable en Móvil) #}
+        <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="profile-pic"><i class="fas fa-user-circle"></i></div>
                 <h2>{{ session.get('username', 'Usuario') }}</h2> 
-                {# Usa la función Python para el rol #}
                 <p>{{ "Doctor" if session.get('role') == 1 else "Enfermero" if session.get('role') == 2 else "Invitado" }}</p>
                 <p>ID: {{ session.get('user_id') }}</p>
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    {# -------------------- RUTAS DOCTOR (ROLE 1) -------------------- #}
+                    {# -------------------- RUTAS DOCTOR-------------------- #}
                     {% if session.get('role') == 1 %}
                         <li>
                             <a href="{{ url_for('doctor_bp.dashboard') }}" 
@@ -138,7 +232,6 @@
                             </a>
                         </li>
                         
-                        {# CORRECCIÓN CLAVE: Apunta a vincular_inicio, ya que escanear_qr fue eliminado #}
                         <li>
                             <a href="{{ url_for('enfermero_bp.vincular_inicio') }}" 
                                 class="{% if 'enfermero_bp.vincular_inicio' in request.endpoint or 'enfermero_bp.vincular_con_codigo' in request.endpoint %}active{% endif %}">
@@ -146,7 +239,6 @@
                             </a>
                         </li>
                         
-                        {# Enlace funcional para 'Pacientes' #}
                         <li>
                             <a href="{{ url_for('enfermero_bp.pacientes') }}" 
                                 class="{% if 'enfermero_bp.pacientes' in request.endpoint %}active{% endif %}">
@@ -168,11 +260,15 @@
 
         <main class="dashboard-content">
             
-            {# ============================================================================== #}
-            {# BARRA SUPERIOR (TOP SIDEBAR) CON LOS LOGOS AGREGADOS #}
+            {# BARRA SUPERIOR (TOP HEADER) - FIJA EN MÓVIL #}
             <div class="top-sidebar-header">
                 
-                {# CONTENEDOR DE TEXTO (A LA IZQUIERDA) #}
+                {# Ícono de Hamburguesa para Móvil #}
+                <div class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                
+                {# CONTENEDOR DE TEXTO (CENTRAL) #}
                 <div class="top-header-text-container">
                     {% block top_header_content %}
                         <h3 class="top-header-title">Panel de Control</h3>
@@ -180,24 +276,23 @@
                     {% endblock %}
                 </div>
                 
-                {# CONTENEDOR DE LOGOS (A LA DERECHA) #}
+                {# CONTENEDOR DE LOGOS (DERECHA) - Mantenemos las imágenes originales #}
                 <div class="top-header-logos">
-                    {# IMPORTANTE: Usamos la ruta estática correcta: 'assets/img/' #}
                     
                     {# Logo de Jurisdicción #}
                     <img src="{{ url_for('static', filename='assets/img/logo_jurisdiccion.png') }}" 
-                         alt="Logo Jurisdicción" 
-                         class="header-logo">
+                          alt="Logo Jurisdicción" 
+                          class="header-logo">
 
                     {# Logo de Salud #}
                     <img src="{{ url_for('static', filename='assets/img/logo_salud.png') }}" 
-                         alt="Logo Salud" 
-                         class="header-logo">
+                          alt="Logo Salud" 
+                          class="header-logo">
                 </div>
             </div>
             {# ============================================================================== #}
 
-            {# Mensajes Flash: Estarán visibles si el CSS de .flashes funciona #}
+            {# Mensajes Flash y Contenido #}
             <div class="page-content-wrapper">
                 {% with messages = get_flashed_messages(with_categories=true) %}
                     {% if messages %}
@@ -215,8 +310,46 @@
         </main>
     </div>
 
+    {# Bloque de Scripts al final del body #}
+    <script>
+        document.getElementById('menuToggle').addEventListener('click', function(event) {
+            event.stopPropagation(); 
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
 
-             {% block scripts %}{% endblock %}
+            if (sidebar.classList.contains('active')) {
+                // Al abrir, añadimos un listener para cerrar al hacer clic en el overlay o fuera del sidebar
+                overlay.addEventListener('click', closeSidebar);
+                // Previene que se haga scroll en el fondo cuando el menú está abierto
+                document.body.style.overflow = 'hidden'; 
+            } else {
+                closeSidebarListeners();
+            }
+        });
+        
+        // Función de cierre del sidebar
+        function closeSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            var overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+            closeSidebarListeners();
+        }
+
+        // Remueve los listeners de cierre y restablece el scroll
+        function closeSidebarListeners() {
+            var overlay = document.getElementById('sidebarOverlay');
+            overlay.removeEventListener('click', closeSidebar);
+            document.body.style.overflow = 'auto'; 
+        }
+        
+    </script>
+    
+    {% block scripts %}{% endblock %}
     
 </body>
 </html>

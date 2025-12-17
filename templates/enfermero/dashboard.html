@@ -2,9 +2,9 @@
 
 {% block title %}Dashboard Enfermero{% endblock %}
 
-{# ================================================================= #}
+
 {# NUEVO BLOQUE: Definición del contenido del Sidebar Superior        #}
-{# ================================================================= #}
+
 {% block top_header_content %}
     <h3 class="top-header-title">Panel del Enfermero</h3>
     <p class="top-header-subtitle">Bienvenido, {{ session.get('username', 'Enfermero') }}. Administre y vincule pacientes.</p>
@@ -12,7 +12,7 @@
 {# ================================================================= #}
 
 {% block content %}
-{# NOTA: El <h1> antiguo se ha eliminado, ya que el título ahora va en la barra superior. #}
+
 
 <div class="card-grid">
     <div class="card">

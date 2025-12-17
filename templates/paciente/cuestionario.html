@@ -1,35 +1,134 @@
-{# templates/paciente/cuestionario.html #}
-
 {% extends 'base_paciente.html' %} 
 
-{% block title %}Cuestionario{% endblock %}
+{% block title %}Cuestionario de Autoprueba{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- VARIABLES DE COLOR --- */
+        :root {
+            --color-primary-red: #D32F2F; 
+            --color-success-green: #388E3C; 
+            --color-card-bg: #FFFFFF; 
+            --color-text-dark: #212529;
+            --color-text-muted: #6c757d;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .patient-flow-card > div { 
+            border: none;
+            border-radius: 25px; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15); 
+            background: var(--color-card-bg);
+            max-width: 550px; /* Tamaño adecuado para una tarjeta de instrucción */
+            width: 100%;
+            padding: 50px 40px; 
+            box-sizing: border-box;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+            border-top: 5px solid var(--color-primary-red);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- TÍTULOS Y TEXTO --- */
+        .step-title {
+            color: var(--color-primary-red);
+            font-weight: 900;
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+        .instruction-text {
+            color: var(--color-text-dark);
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            font-weight: 500;
+        }
+        
+        /* --- BOTÓN DE REDIRECCIÓN (Usando el color rojo primario) --- */
+        .btn-redirect {
+            /* Diseño dramático y profesional */
+            background: linear-gradient(90deg, #E53935 0%, var(--color-primary-red) 100%);
+            border: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.2rem;
+            padding: 18px 30px; 
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            width: 100%;
+            max-width: 350px; 
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+            display: inline-block; /* Importante para que el botón de redirección funcione como link */
+            text-decoration: none; /* Quitar el subrayado del link */
+        }
+        
+        .btn-redirect:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(211, 47, 47, 0.6);
+            color: white; /* Asegurar que el texto sea blanco al hacer hover */
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .patient-flow-card > div {
+                padding: 30px 20px;
+            }
+            .step-title {
+                font-size: 1.8rem;
+            }
+            .instruction-text {
+                font-size: 1rem;
+            }
+            .btn-redirect {
+                max-width: 100%;
+                font-size: 1.1rem;
+                padding: 15px;
+            }
+        }
+    </style>
+{% endblock %}
 
 {% block patient_content %}
-    <h2>Paso 2: Cuestionario de Riesgo</h2>
-    <p>Responda SÍ o NO a las siguientes preguntas:</p>
-    
-    {# CRÍTICO: El action apunta a la ruta que GUARDA y AVANZA #}
-    <form method="POST" action="{{ url_for('paciente_bp.guardar_cuestionario') }}">
+    <div class="survey-page-content">
         
-        {# Se asume que la variable 'preguntas' es una lista de diccionarios con 'texto' e 'id' #}
-        {% for pregunta in preguntas %}
-            <div style="text-align: left; margin-bottom: 25px;">
-                <label style="display: block; font-weight: bold; margin-bottom: 10px;">
-                    {{ loop.index }}. {{ pregunta.texto }}
-                </label>
-                
-                {# Los name CRÍTICOS deben ser únicos y seguir el patrón 'q_ID' #}
-                <div style="display: flex; gap: 20px;">
-                    <label>
-                        <input type="radio" name="q_{{ pregunta.id }}" value="Si" required> SÍ
-                    </label>
-                    <label>
-                        <input type="radio" name="q_{{ pregunta.id }}" value="No"> NO
-                    </label>
-                </div>
-            </div>
-        {% endfor %}
+        <h2 class="step-title">Paso 3: Cuestionario de Autopruebas</h2>
+        <p class="instruction-text">
+            Ahora será dirigido a un formulario seguro de Google Forms para responder las preguntas del cuestionario. Sus respuestas son confidenciales.
+        </p>
         
-        <button type="submit" class="btn btn-primary btn-lg">Continuar a Datos Personales</button>
-    </form>
+        <p class="instruction-text" style="font-weight: 600;">
+            ¡Vuelva a esta página después de enviar el cuestionario para ingresar su resultado!
+        </p>
+        
+        {# Botón de redirección que abre el Google Form en una nueva pestaña #}
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLScY_hDGirI_7zpmtCTVihn5dVPn4VNPWmz9Ceh09jkR0bzEyw/viewform?usp=header" 
+           target="_blank" 
+           rel="noopener noreferrer"
+           class="btn-redirect">
+            <i class="fas fa-external-link-alt"></i> IR AL CUESTIONARIO EXTERNO
+        </a>
+        
+       
+        
+        <form action="{{ url_for('paciente_bp.siguiente_paso') }}" method="GET" style="margin-top: 50px;">
+            <p class="instruction-text" style="margin-bottom: 15px; font-weight: normal; color: var(--color-text-muted);">
+                (Presione **"Continuar"** una vez que haya llenado el formulario externo)
+            </p>
+            <button type="submit" class="btn-redirect" style="background-color: var(--color-success-green); box-shadow: 0 4px 15px rgba(56, 142, 60, 0.4);">
+                CONTINUAR A INGRESO DE RESULTADO <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+        
+    </div>
 {% endblock %}

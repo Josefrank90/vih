@@ -4,23 +4,155 @@
 
 {% block title %}Bienvenido/a al Test{% endblock %}
 
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* --- VARIABLES DE COLOR --- */
+        :root {
+            --color-primary-red: #D32F2F; /* Rojo principal */
+            --color-card-bg: #FFFFFF; /* Fondo de la tarjeta */
+            --color-text-dark: #212529;
+            --color-text-muted: #6c757d;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL Y ANIMACIÓN --- */
+        .welcome-card {
+            /* Forzamos el diseño de tarjeta profesional */
+            border: none;
+            border-radius: 25px; 
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15); /* Sombra suave y brillante */
+            background: var(--color-card-bg);
+            max-width: 550px; 
+            width: 100%;
+            padding: 50px 40px; 
+            box-sizing: border-box;
+            text-align: center;
+            
+            /* Animación de entrada suave */
+            animation: slideIn 0.8s ease-out;
+            border-left: 5px solid var(--color-primary-red); /* Borde lateral enfático */
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- CABECERA Y TÍTULO --- */
+        .welcome-icon {
+            font-size: 3.5rem;
+            color: var(--color-primary-red);
+            margin-bottom: 20px;
+            animation: bounceIn 1s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Animación de rebote sutil */
+        }
+        
+        @keyframes bounceIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            80% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        h1 {
+            color: var(--color-text-dark);
+            font-weight: 900;
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        /* --- TEXTO INFORMATIVO --- */
+        .lead-text {
+            color: var(--color-text-dark);
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            font-weight: 500;
+        }
+        .confidential-note {
+            display: block;
+            color: var(--color-text-muted);
+            font-style: italic;
+            margin-top: 10px;
+            font-size: 0.95rem;
+        }
+
+        /* --- LÍNEA SEPARADORA --- */
+        .separator {
+            border-color: var(--color-border-light);
+            margin: 30px 0;
+            opacity: 0.5;
+        }
+
+        /* --- BOTÓN DE ACCESO (Dramático y profesional) --- */
+        .btn-access {
+            background: linear-gradient(90deg, #E53935 0%, var(--color-primary-red) 100%);
+            border: none;
+            color: white;
+            font-weight: 800;
+            font-size: 1.3rem;
+            padding: 18px 30px; 
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.3s;
+            cursor: pointer;
+            width: 100%;
+            max-width: 350px; /* Ancho cómodo para el botón */
+            margin-top: 25px;
+            box-shadow: 0 4px 15px rgba(211, 47, 47, 0.4);
+        }
+
+        .btn-access:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(211, 47, 47, 0.6); 
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+             .welcome-card {
+                padding: 30px 20px;
+                border-radius: 15px;
+                margin: 10px;
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .lead-text {
+                font-size: 1rem;
+            }
+            .btn-access {
+                font-size: 1.1rem;
+                padding: 15px 20px;
+                max-width: 100%;
+            }
+        }
+    </style>
+{% endblock %}
+
 {% block patient_content %}
-    <div class="card text-center p-4">
+    <div class="welcome-card">
+        
+        <i class="fas fa-hand-paper welcome-icon"></i>
+        
         <h1>¡Bienvenido/a!</h1>
-        <p class="lead">
-            Has escaneado tu código QR correctamente. Estás a punto de iniciar el proceso de la autoprueba VIH.
-            <br>Toda la información es estrictamente confidencial.
+        
+        <p class="lead-text">
+            Has escaneado tu código QR correctamente. 
+            Estás a punto de iniciar el proceso de la autoprueba VIH.
+            <span class="confidential-note">Toda la información es estrictamente confidencial.</span>
         </p>
         
-        <hr>
+        <hr class="separator">
         
-        <p>
+        <p class="lead-text">
             Presiona el botón **Acceder** para comenzar con el video informativo y continuar con el cuestionario.
         </p>
 
-        <form action="{{ url_for('paciente_bp.siguiente_paso') }}" method="GET" style="margin-top: 30px;">
-            <button type="submit" class="btn btn-primary btn-lg">
-                Acceder y Ver Video
+        <form action="{{ url_for('paciente_bp.siguiente_paso') }}" method="GET">
+            <button type="submit" class="btn-access">
+                <i class="fas fa-video"></i> ACCEDER Y VER VIDEO
             </button>
         </form>
         
