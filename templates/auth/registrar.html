@@ -1,0 +1,201 @@
+{% extends 'base_simple.html' %}
+
+{% block title %}Crear Nueva Cuenta{% endblock %}
+
+{% block head %}
+    {{ super() }}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f4f7f6 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        .register-card {
+            background: #ffffff;
+            border-radius: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+            padding: 40px;
+            position: relative;
+            border-left: 8px solid #D32F2F; /* Barra roja decorativa */
+        }
+
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .register-header i {
+            font-size: 3rem;
+            color: #D32F2F;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-weight: 800;
+            color: #212529;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid #ced4da;
+            transition: all 0.3s;
+        }
+
+        /* Validación visual de correo */
+        .form-control:invalid:not(:placeholder-shown) {
+            border-color: #e74c3c;
+            background-color: #fceae9;
+        }
+
+        .email-hint {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .btn-register {
+            background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-top: 20px;
+            box-shadow: 0 8px 15px rgba(211, 47, 47, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px rgba(211, 47, 47, 0.3);
+        }
+
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        .login-link a {
+            color: #D32F2F;
+            font-weight: 700;
+            text-decoration: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="register-card">
+    <div class="register-header">
+        <i class="fas fa-user-md"></i>
+        <h2>Registro de Personal</h2>
+        <p class="text-muted">Cree su cuenta para acceder al sistema AUTOTESTS_VIH</p>
+    </div>
+
+    <form action="{{ url_for('auth_bp.registrar') }}" method="POST" id="registrationForm">
+        <div class="row">
+            <div class="col-md-12 mb-3">
+                <label class="form-label">Nombre Completo</label>
+                <input type="text" name="nombres" class="form-control" placeholder="Ej. Juan Pérez" required>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Fecha de Nacimiento</label>
+                <input type="date" name="fecha_nacimiento" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Cédula Profesional</label>
+                <input type="text" name="cedula" class="form-control" placeholder="Número de cédula" required>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Correo Electrónico Personal</label>
+                <input type="email" 
+                       name="email" 
+                       id="emailInput"
+                       class="form-control" 
+                       placeholder="usuario@gmail.com" 
+                       pattern="^.+@(gmail\.com|hotmail\.com|outlook\.com|yahoo\.com|icloud\.com)$"
+                       title="Por favor use un correo válido (Gmail, Hotmail, Outlook, Yahoo o iCloud)"
+                       required>
+                <div class="email-hint" id="emailHint">Use una cuenta real para recibir notificaciones.</div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Teléfono</label>
+                <input type="tel" name="telefono" class="form-control" placeholder="10 dígitos" required>
+            </div>
+
+            <div class="col-md-12 mb-3">
+                <label class="form-label">Rol en el Sistema</label>
+                <select name="rol_id" class="form-control" required>
+                    <option value="" disabled selected>Seleccione su cargo...</option>
+                    <option value="1">Doctor (Administrador)</option>
+                    <option value="2">Enfermero (Operativo)</option>
+                </select>
+            </div>
+
+            <div class="col-md-12 mb-3">
+                <label class="form-label">Contraseña</label>
+                <input type="password" name="password" class="form-control" placeholder="Mínimo 8 caracteres" minlength="8" required>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-register" id="btnRegister">
+            <i class="fas fa-user-plus"></i> Crear Cuenta
+        </button>
+    </form>
+
+    <div class="login-link">
+        ¿Ya tiene una cuenta? <a href="{{ url_for('auth_bp.login') }}">Inicie Sesión aquí</a>
+    </div>
+</div>
+
+<script>
+    const emailInput = document.getElementById('emailInput');
+    const emailHint = document.getElementById('emailHint');
+    const form = document.getElementById('registrationForm');
+    const btnSubmit = document.getElementById('btnRegister');
+
+    // Validación dinámica en tiempo real
+    emailInput.addEventListener('input', function() {
+        const allowedDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'icloud.com'];
+        const emailValue = this.value.toLowerCase();
+        const domain = emailValue.split('@')[1];
+
+        if (emailValue === "") {
+            emailHint.style.color = "#666";
+            emailHint.textContent = "Use una cuenta real para recibir notificaciones.";
+        } else if (allowedDomains.includes(domain)) {
+            emailHint.style.color = "#27ae60";
+            emailHint.innerHTML = '<i class="fas fa-check-circle"></i> Dominio aceptado.';
+        } else {
+            emailHint.style.color = "#e74c3c";
+            emailHint.innerHTML = '<i class="fas fa-times-circle"></i> Use Gmail, Hotmail u Outlook.';
+        }
+    });
+
+    // Feedback de carga al enviar
+    form.addEventListener('submit', function(e) {
+        if (this.checkValidity()) {
+            btnSubmit.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Procesando registro...';
+            btnSubmit.style.opacity = "0.8";
+            btnSubmit.style.pointerEvents = "none";
+        }
+    });
+</script>
+{% endblock %}

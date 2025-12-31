@@ -192,14 +192,22 @@
 
     <div class="dashboard-layout">
         
-        {# Sidebar (Menú Deslizable en Móvil) #}
-        <aside class="sidebar" id="sidebar">
-            <div class="sidebar-header">
-                <div class="profile-pic"><i class="fas fa-user-circle"></i></div>
-                <h2>{{ session.get('username', 'Usuario') }}</h2> 
-                <p>{{ "Doctor" if session.get('role') == 1 else "Enfermero" if session.get('role') == 2 else "Invitado" }}</p>
-                <p>ID: {{ session.get('user_id') }}</p>
-            </div>
+       {# Sidebar (Menú Deslizable en Móvil) #}
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        {# Icono de usuario #}
+        <div class="profile-pic"><i class="fas fa-user-circle"></i></div>
+        
+        {# 1. Muestra el Nombre Real del profesional #}
+        <h2>{{ session.get('full_name', 'Usuario') }}</h2> 
+        
+        {# 2. Muestra el Cargo dinámicamente #}
+        <p style="font-weight: 600; letter-spacing: 1px; margin-top: 5px;">
+            {{ "Doctor" if session.get('role') == 1 else "Enfermero" if session.get('role') == 2 else "Invitado" }}
+        </p>
+
+        {# HEMOS ELIMINADO LA LÍNEA DEL ID AQUÍ PARA LIMPIAR LA INTERFAZ #}
+    </div>
             <nav class="sidebar-nav">
                 <ul>
                     {# -------------------- RUTAS DOCTOR-------------------- #}

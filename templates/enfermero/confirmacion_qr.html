@@ -1,5 +1,4 @@
 {% extends "base_simple_enfermero.html" %} 
-{# AJUSTE CLAVE: Usamos la plantilla minimalista que no tiene sidebar #}
 
 {% block title %}Confirmación de Vinculación{% endblock %}
 
@@ -8,7 +7,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 
 <style>
-    /* Variables y estilos adicionales para mejorar la estética Bootstrap */
     :root {
         --color-primary-red: #D32F2F; 
         --color-success-green: #28a745; 
@@ -19,9 +17,8 @@
         background-color: var(--color-success-green) !important;
     }
     
-    /* Estilo del contenedor de la URL para mejor visibilidad */
     .url-display {
-        background-color: #f8f9fa; /* Color Bootstrap light */
+        background-color: #f8f9fa;
         border: 1px solid #dee2e6;
         padding: 15px;
         border-radius: 6px;
@@ -32,7 +29,6 @@
         margin-top: 10px;
     }
     
-    /* Estilo del botón principal (Copiar URL) para que destaque */
     .btn-copy-main {
         background-color: var(--color-primary-red) !important;
         border-color: var(--color-primary-red) !important;
@@ -41,25 +37,23 @@
         padding: 12px 20px;
         transition: background-color 0.3s;
     }
-    .btn-copy-main:hover {
-        background-color: #A52A2A !important;
-        border-color: #A52A2A !important;
-    }
 
-    /* Estilo del nuevo botón de cierre */
+    /* Botón de cierre en rojo institucional */
     .btn-close-main {
-        background-color: var(--color-text-muted) !important;
-        border-color: var(--color-text-muted) !important;
+        background-color: var(--color-primary-red) !important;
+        border-color: var(--color-primary-red) !important;
         color: white;
         font-weight: 700;
-        padding: 12px 20px;
-        transition: background-color 0.3s;
+        padding: 15px 20px;
+        width: 100%;
+        border-radius: 10px;
+        transition: 0.3s;
+        text-transform: uppercase;
     }
     .btn-close-main:hover {
-        background-color: #5A6268 !important;
-        border-color: #5A6268 !important;
+        background-color: #A52A2A !important;
+        filter: brightness(90%);
     }
-
 </style>
 {% endblock %}
 
@@ -67,28 +61,21 @@
 <div class="container mt-5">
     <div class="row justify-content-center">
         <div class="col-md-8">
-            {# Sombra y borde profesional, utilizando clases de Bootstrap #}
             <div class="card shadow-lg border-success" style="border-radius: 12px;">
                 <div class="card-header bg-success text-white" style="border-top-left-radius: 12px; border-top-right-radius: 12px;">
                     <h4 class="mb-0" style="font-weight: 700;"><i class="fas fa-check-circle"></i> Vinculación Exitosa</h4>
                 </div>
                 <div class="card-body">
-                    
-                    {# Mensaje de confirmación #}
                     <p class="lead text-center" style="font-weight: 500; color: var(--color-text-dark);">
                         El paciente ha sido registrado y el QR ha sido vinculado correctamente.
                     </p>
-                    
                     <hr>
-                    
                     <h5 class="text-primary mt-4" style="font-weight: 600;">Instrucciones para el Paciente:</h5>
                     <p class="text-muted">Proporcione la siguiente URL al paciente para que inicie su flujo de autoprueba <strong>sin necesidad de iniciar sesión</strong>.</p>
                     
-                    {# URL de Acceso Directo Destacada #}
                     <div class="alert alert-info text-break p-3" role="alert">
                         <strong>URL de Acceso Directo:</strong>
                         <div class="url-display" id="paciente-url">
-                            {# Usar url_completa (variable de Jinja) #}
                             {{ url_completa }}
                         </div>
                     </div>
@@ -97,18 +84,14 @@
                         <p class="mb-0">
                             <small class="text-muted">ID Paciente: <b>{{ paciente_id }}</b> | Código QR: <b>{{ qr_codigo }}</b></small>
                         </p>
-                        
-                        {# Botón Copiar URL #}
-                        <button class="btn btn-sm btn-outline-primary btn-copy-main" onclick="copiarURL()">
+                        <button class="btn btn-sm btn-copy-main" onclick="copiarURL()">
                             <i class="fas fa-copy"></i> Copiar URL
                         </button>
                     </div>
 
                     <hr>
-                    
                     <div class="text-center mt-4">
-                        {# BOTÓN CERRAR VENTANA (Único botón principal) #}
-                        <button class="btn btn-block btn-close-main" onclick="cerrarVentana()">
+                        <button class="btn btn-close-main" id="btnCerrarFinal">
                             <i class="fas fa-times-circle"></i> CERRAR VENTANA
                         </button>
                     </div>
@@ -117,7 +100,6 @@
         </div>
     </div>
 </div>
-
 {% endblock content %}
 
 {% block scripts %}
@@ -125,34 +107,34 @@
     function copiarURL() {
         const urlElement = document.getElementById('paciente-url');
         const textToCopy = urlElement.innerText;
-        
-        // Usar la API del portapapeles moderna
-        navigator.clipboard.writeText(textToCopy)
-            .then(() => {
-                alert('¡URL de acceso copiada! Compártela con el paciente.');
-            })
-            .catch(err => {
-                // Fallback si la API moderna falla o es bloqueada
-                const tempTextArea = document.createElement('textarea');
-                tempTextArea.value = textToCopy;
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempTextArea);
-                alert('¡URL de acceso copiada! Compártela con el paciente.');
-            });
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            alert('¡URL de acceso copiada!');
+        });
     }
 
-    function cerrarVentana() {
-        // 1. Intenta cerrar la ventana/pestaña actual (funciona si fue abierta por script)
+    // Lógica mejorada para intentar el cierre de ventana en móviles
+    document.getElementById('btnCerrarFinal').addEventListener('click', function() {
+        // 1. Intento estándar
         window.close();
-        
-        // 2. Fallback: Si el navegador bloquea window.close(), redirigimos al dashboard del enfermero.
-        // Esto elimina la página actual del historial sin mostrar un mensaje de error.
+
+        // 2. Intento forzado (truco para navegadores móviles)
+        // Se abre a sí mismo y luego se cierra, esto a veces desbloquea el permiso de cierre
+        window.open('', '_self', '');
+        window.close();
+
+        // 3. Redirección al "Home" del navegador si el cierre es bloqueado
+        // Esto evita que se quede la pantalla en blanco (about:blank)
         setTimeout(() => {
-            // Reemplazar la ubicación con el dashboard de enfermero (o la página de inicio)
-            window.location.replace('{{ url_for("enfermero_bp.dashboard") }}'); 
-        }, 100); 
-    }
+            // Mandamos a una URL que los navegadores suelen interpretar como "cerrar" 
+            // o que simplemente limpia la sesión visualmente.
+            window.location.replace("about:home");
+            
+            // Si el dispositivo es un teléfono, esto suele mandar al usuario
+            // a la pantalla de pestañas o buscador predeterminado.
+            if (!window.closed) {
+                window.location.href = "https://www.google.com";
+            }
+        }, 200);
+    });
 </script>
 {% endblock scripts %}

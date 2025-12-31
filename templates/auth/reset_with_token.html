@@ -1,0 +1,86 @@
+{% extends 'base_simple.html' %}
+
+{% block head %}
+<style>
+    /* Diseño consistente con tu Login */
+    .main-wrapper::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: white;
+        clip-path: ellipse(95% 65% at 10% 0%); 
+        z-index: 1;
+    }
+
+    .reset-card {
+        background: white;
+        border-radius: 40px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+        padding: 50px;
+        z-index: 10;
+        max-width: 450px;
+        width: 90%;
+        text-align: center;
+        animation: slideUp 0.6s ease-out;
+    }
+
+    h2 { color: #8B0000; font-weight: 300; margin-bottom: 15px; }
+    p { color: #666; font-size: 0.9rem; margin-bottom: 30px; }
+
+    .form-control-porto {
+        width: 100%;
+        padding: 18px 25px;
+        border-radius: 50px;
+        border: none;
+        background: #FFEBE6; 
+        font-size: 1rem;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .btn-porto {
+        background: #8B0000;
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 50px;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        transition: 0.3s;
+        text-transform: uppercase;
+    }
+
+    .btn-porto:hover { transform: scale(1.03); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; width: 100%;">
+    
+    <div class="reset-card">
+        <i class="fas fa-key" style="font-size: 3rem; color: #8B0000; margin-bottom: 20px;"></i>
+        <h2>Nueva Contraseña</h2>
+        <p>Por favor, ingrese su nueva clave de acceso para actualizar su cuenta.</p>
+        
+        <form action="{{ url_for('auth_bp.reset_with_token', token=token) }}" method="POST" id="updateForm">
+            <input type="password" 
+                   name="password" 
+                   class="form-control-porto" 
+                   placeholder="Mínimo 8 caracteres" 
+                   minlength="8" 
+                   required>
+            
+            <button type="submit" class="btn-porto" id="btnUpdate">Actualizar Contraseña</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.getElementById('updateForm').addEventListener('submit', function() {
+        const btn = document.getElementById('btnUpdate');
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Guardando...';
+        btn.style.pointerEvents = 'none';
+    });
+</script>
+{% endblock %}

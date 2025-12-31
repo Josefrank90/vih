@@ -1,0 +1,131 @@
+{% extends 'base_simple.html' %}
+
+{% block head %}
+<style>
+    /* --- MANTENEMOS TU DISEÑO DE LA OLA ORIGINAL --- */
+    .main-wrapper::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: white;
+        clip-path: ellipse(95% 65% at 10% 0%); 
+        z-index: 1;
+    }
+
+    .login-card {
+        display: flex;
+        width: 95%;
+        max-width: 1000px;
+        background: white;
+        border-radius: 40px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.2);
+        overflow: hidden;
+        z-index: 10;
+        min-height: 550px;
+        animation: slideUp 0.8s ease-out;
+    }
+
+    /* Logo JSX superior izquierda */
+    .jsxii-logo {
+        position: absolute;
+        top: 35px; left: 45px; z-index: 25;
+        width: 170px; height: auto;
+    }
+
+    .login-visual {
+        width: 50%;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: #ffffff;
+    }
+
+    #medicoImg {
+        width: 90%;
+        max-width: 400px;
+        filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+        animation: float 6s ease-in-out infinite;
+    }
+
+    .login-form-area {
+        width: 50%;
+        padding: 60px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        border-left: 1px solid #f0f0f0;
+    }
+
+    h2 { color: #8B0000; font-weight: 300; margin-bottom: 20px; text-align: center; }
+    p { color: #666; text-align: center; margin-bottom: 30px; font-size: 0.95rem; }
+
+    .form-control-porto {
+        width: 100%;
+        padding: 18px 25px 18px 60px;
+        border-radius: 50px;
+        border: none;
+        background: #FFEBE6; 
+        font-size: 1rem;
+    }
+
+    .btn-porto {
+        background: #8B0000;
+        color: white;
+        border: none;
+        padding: 14px 45px;
+        border-radius: 50px;
+        font-weight: 700;
+        width: 100%;
+        cursor: pointer;
+        transition: 0.3s;
+        text-transform: uppercase;
+    }
+
+    .btn-porto:hover { transform: scale(1.05); background: #a00000; }
+
+    @media (max-width: 850px) {
+        .login-card { flex-direction: column; width: 92%; }
+        .login-visual, .login-form-area { width: 100%; padding: 30px; }
+        .jsxii-logo { position: relative; top: 0; left: 0; margin: 0 auto 20px; display: block; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100%;">
+    
+        <div class="login-card">
+        <div class="login-visual">
+            <img src="{{ url_for('static', filename='assets/img/JSX.png') }}" id="medicoImg" alt="Tabasco">
+        </div>
+
+        <div class="login-form-area">
+            <h2>Recuperar Acceso</h2>
+            <p>Ingrese su correo electrónico para recibir un enlace seguro de restablecimiento.</p>
+            
+            <form action="{{ url_for('auth_bp.reset_password_request') }}" method="POST" id="resetForm">
+                <div class="input-group-custom" style="position: relative; margin-bottom: 30px;">
+                    <i class="fas fa-envelope" style="position: absolute; left: 22px; top: 50%; transform: translateY(-50%); color: #8B0000;"></i>
+                    <input type="email" name="email" class="form-control-porto" placeholder="Correo electrónico" required>
+                </div>
+                
+                <button type="submit" class="btn-porto" id="btnReset">Enviar Enlace</button>
+            </form>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <a href="{{ url_for('auth_bp.login') }}" style="color: #8B0000; text-decoration: none; font-weight: 700;">Volver al Inicio de Sesión</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('resetForm').addEventListener('submit', function() {
+        const btn = document.getElementById('btnReset');
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Enviando...';
+        btn.style.pointerEvents = 'none';
+    });
+</script>
+{% endblock %}

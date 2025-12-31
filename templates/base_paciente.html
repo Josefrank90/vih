@@ -3,20 +3,35 @@
 {% block head %}
     {{ super() }}
     <style>
-        /* Aplicamos estilos para asegurar que la tarjeta de flujo del paciente
-           se posicione y se vea limpia, anulando estilos de login heredados (como fondos rojos o anchos pequeños). */
+        /* REESTRUCTURACIÓN TOTAL PARA EL FLUJO DEL PACIENTE */
+        body {
+            /* Fondo gris claro neutro para que la tarjeta blanca resalte */
+            background-color: #f4f7f6 !important; 
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        /* Contenedor maestro que anula estilos de login previos */
+        .patient-flow-container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background: none !important; /* Quitamos el rojo de fondo si existía */
+        }
+
         .patient-flow-card {
-            /* Anular cualquier restricción de ancho que venga de un contenedor padre */
             max-width: 100% !important; 
             width: 100% !important;
-            padding: 0;
-            margin: 0;
-            /* Forzar el fondo a ser transparente para que el body defina el color base,
-               y la tarjeta interna (como .main-card en ingreso_resultado.html) defina el color blanco. */
             background: transparent !important; 
             border: none !important;
             box-shadow: none !important;
-            /* Centrar el contenido de la tarjeta */
             display: flex;
             justify-content: center;
         }
@@ -24,10 +39,11 @@
 {% endblock %}
 
 {% block content %}
-    {# Este contenedor asegura que el contenido del paciente esté centrado #}
-    <div class="patient-flow-card">
-        {% block patient_content %}
-            {# Este bloque será llenado por bienvenida.html, cuestionario.html, etc. #}
-        {% endblock %}
+    <div class="patient-flow-container">
+        <div class="patient-flow-card">
+            {% block patient_content %}
+                {# Contenido dinámico (bienvenida, video, etc.) #}
+            {% endblock %}
+        </div>
     </div>
 {% endblock %}
